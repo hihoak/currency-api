@@ -1,37 +1,98 @@
-###
-POST http://51.250.48.195:8000/user/register
-Content-Type: application/json
-
-{"user":
-  { "name": "artem", "middle_name": "mihaylov",
-    "mail": "artem1@inbox.ru", "phone_number": "+1112312",
-    "blocked": false,  "registered": false,
-    "admin": true, "username": "artemikhaylov",
-    "password": "secretpass" },
-  "wallet": { "currency": "USD", "value": 3000 }
-}
-
-###
-POST http://localhost:8000/user/approve
-Content-Type: application/json
-
-{"user":
-{ "id": 13 }
-}
-
-###
-POST http://localhost:8000/user/block
-Content-Type: application/json
-
-{"user":
-{ "id": 13 }
-}
-
-###
-POST http://51.250.48.195:8000/user/list
+### /register
+POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/register
 Content-Type: application/json
 
 {
-  "count": 10,
-  "offset": 0
+  "user": {
+    "name": "artem",
+    "middle_name": "mihaylov",
+    "mail": "artem1@inbox.ru",
+    "phone_number": "+1112312",
+    "blocked": false,
+    "registered": false,
+    "admin": true,
+    "username": "artemikhaylov",
+    "password": "secretpass"
+  },
+  "wallet": {
+    "currency": "USD",
+    "value": 3000
+  }
+}
+
+### /register/approve
+POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/register/approve
+Content-Type: application/json
+
+{
+  "user": {
+    "id": 13
+  }
+}
+
+### /register/approve
+POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/login
+Content-Type: application/json
+
+{
+  "username": "artem",
+  "password": "supersecret",
+}
+
+### /user/block   block == false - will unblock
+POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/user/block
+Content-Type: application/json
+
+{
+  "user": {
+    "id": 132,
+  },
+  "block": false
+}
+
+### /user/list
+POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/user/list
+Content-Type: application/json
+
+{
+  "offset": 0,
+  "count": 100
+}
+
+### /user/info
+POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/user/info
+Content-Type: application/json
+
+{
+  "id": 123
+}
+
+### /wallet/get
+POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/wallet/get
+Content-Type: application/json
+
+{
+  "id": 123
+}
+
+### /wallet/create
+POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/wallet/create
+Content-Type: application/json
+
+{
+  "wallet": {
+    "id": 123,
+    "user_id": 123,
+    "currency": "USD",
+    "value": 2000
+  }
+}
+
+### /wallet/create
+POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/wallet/money/add
+Content-Type: application/json
+
+{
+  "id": 123,
+  "value": 2000
 }

@@ -24,8 +24,10 @@ CREATE TABLE IF NOT EXISTS transactions
     id          SERIAL PRIMARY KEY NOT NULL,
     date         timestamp with time zone NOT NULL,
     user_id        int NOT NULL,
+    wallet_id int NOT NULL,
     operation_name varchar(50) NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users (id)
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (wallet_id) REFERENCES wallets (id)
 );
 
 CREATE INDEX transactions_user_id_index ON transactions

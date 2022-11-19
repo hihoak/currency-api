@@ -125,22 +125,6 @@ func (s *Storage) SaveNewUser(ctx context.Context, user *models.User, wallet *mo
 	return userID, nil
 }
 
-func (s *Storage) SaveWallet(ctx context.Context, tx *sql.Tx, wallet *models.Wallet) error {
-	s.log.Debug().Msgf("storage: start saving wallet")
-	query := `
-	INSERT INTO wallets (user_id, currency, value)
-	VALUES ($1, $2, $3)
-	RETURNING id`
-	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
-	defer cancel()
-	_, err := tx.ExecContext(ctx, query, wallet.UserID, wallet.Currency, wallet.Value)
-	if err != nil {
-		return fmt.Errorf("failed to save wallet: %w", err)
-	}
-	s.log.Debug().Msgf("storage: wallet saved successfully")
-	return nil
-}
-
 func (s *Storage) ApproveUsersRequest(ctx context.Context, userID int64) error {
 	q := `
 	UPDATE users
@@ -153,12 +137,12 @@ func (s *Storage) ApproveUsersRequest(ctx context.Context, userID int64) error {
 	return nil
 }
 
-func (s *Storage) BlockUser(ctx context.Context, userID int64) error {
+func (s *Storage) BlockOrUnblockUser(ctx context.Context, userID int64, block bool) error {
 	q := `
 	UPDATE users
-	SET blocked = true
+	SET blocked = $2
 	WHERE id = $1;`
-	_, err := s.db.QueryxContext(ctx, q, true, userID)
+	_, err := s.db.QueryxContext(ctx, q, true, userID, block)
 	if err != nil {
 		return err
 	}
@@ -267,9 +251,106 @@ func (s *Storage) AddMoneyToWallet(ctx context.Context, walletID int64, amount i
 		}
 	}
 
-	s.log.Debug().Msgf("Successfully get wallet")
+	query = `
+	INSERT INTO transactions (wallet_id, user_id, date, operation_name)
+	VALUES ($1, $2, now(), 'ADD MONEY')
+	RETURNING id`
+	_, err = tx.QueryContext(ctx, query, walletID, wallet.UserID)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	s.log.Debug().Msgf("Successfully add money to wallet")
 	wallet.Value = value
 	return wallet, nil
+}
+
+func (s *Storage) GetUser(ctx context.Context, userID int64) (*models.User, error) {
+	s.log.Debug().Msg("Start listing users")
+	query := `
+	SELECT *
+	FROM users
+	WHERE id = '$1'`
+	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
+	defer cancel()
+	rows, err := s.db.QueryxContext(ctx, query, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+	events, scanErr := s.fromSQLRowsToUsers(rows)
+	if err != nil {
+		return nil, fmt.Errorf("failed to scan users: %w", scanErr)
+	}
+	if len(events) == 0 {
+		return nil, fmt.Errorf("user with id %d not found: %w", userID, errs.ErrNotFound)
+	}
+	s.log.Debug().Msgf("Successfully get user")
+	return events[0], nil
+}
+
+func (s *Storage) GetUserWallets(ctx context.Context, userID int64) ([]*models.Wallet, error) {
+	s.log.Debug().Msgf("Start listing wallets for user '%d'", userID)
+	query := `
+	SELECT *
+	FROM wallets
+	WHERE user_id = '$1'`
+	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
+	defer cancel()
+	rows, err := s.db.QueryxContext(ctx, query, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get wallets: %w", err)
+	}
+	wallets, scanErr := s.fromSQLRowsToWallets(rows)
+	if err != nil {
+		return nil, fmt.Errorf("failed to scan wallets: %w", scanErr)
+	}
+	if len(wallets) == 0 {
+		return nil, fmt.Errorf("wallets with user_id %d not found: %w", userID, errs.ErrNotFound)
+	}
+	s.log.Debug().Msgf("Successfully get wallets")
+	return wallets, nil
+}
+
+func (s *Storage) SaveWallet(ctx context.Context, tx *sql.Tx, wallet *models.Wallet) error {
+	s.log.Debug().Msgf("storage: start saving wallet")
+	query := `
+	INSERT INTO wallets (user_id, currency, value)
+	VALUES ($1, $2, $3)
+	RETURNING id`
+	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
+	defer cancel()
+	_, err := tx.ExecContext(ctx, query, wallet.UserID, wallet.Currency, wallet.Value)
+	if err != nil {
+		return fmt.Errorf("failed to save wallet: %w", err)
+	}
+	s.log.Debug().Msgf("storage: wallet saved successfully")
+	return nil
+}
+
+func (s *Storage) SaveWalletUnary(ctx context.Context, wallet *models.Wallet) (int64, error) {
+	s.log.Debug().Msgf("storage: start saving wallet")
+	query := `
+	INSERT INTO wallets (user_id, currency, value)
+	VALUES ($1, $2, $3)
+	RETURNING id`
+	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
+	defer cancel()
+	rows, err := s.db.QueryxContext(ctx, query, wallet.UserID, wallet.Currency, wallet.Value)
+	if err != nil {
+		return 0, fmt.Errorf("failed to save wallet: %w", err)
+	}
+	var id int64
+	for rows.Next() {
+		if err := rows.Scan(&id); err != nil {
+			return 0, err
+		}
+	}
+	s.log.Debug().Msgf("storage: wallet saved successfully")
+	return id, nil
 }
 
 

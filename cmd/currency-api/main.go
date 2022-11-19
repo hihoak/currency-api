@@ -5,6 +5,7 @@ import (
 	"flag"
 	"github.com/hihoak/currency-api/internal/app/registrator"
 	"github.com/hihoak/currency-api/internal/app/users"
+	"github.com/hihoak/currency-api/internal/app/walleter"
 	"github.com/hihoak/currency-api/internal/clients/storager"
 	"github.com/hihoak/currency-api/internal/pkg/config"
 	"github.com/hihoak/currency-api/internal/pkg/logger"
@@ -41,11 +42,19 @@ func main() {
 
 	reg := registrator.New(logg, store)
 	usr := users.New(logg, store)
+	wal := walleter.New(logg, store)
 
-	http.HandleFunc("/user/register", reg.RegisterNewUser())
-	http.HandleFunc("/user/approve", reg.ApproveUsersRequest())
-	http.HandleFunc("/user/block", reg.BlockUser())
+	http.HandleFunc("/register", reg.RegisterNewUser())
+	http.HandleFunc("/register/approve", reg.ApproveUsersRequest())
+	http.HandleFunc("/login", reg.LoginUser())
+
+	http.HandleFunc("/user/block", usr.BlockOrUnblockUser())
 	http.HandleFunc("/user/list", usr.ListUsers())
+	http.HandleFunc("/user/info", usr.GetUserFullInfo())
+
+	http.HandleFunc("/wallet/get", wal.GetWallet())
+	http.HandleFunc("/wallet/create", wal.CreateNewWallet())
+	http.HandleFunc("/wallet/money/add", wal.AddMoneyToWallet())
 
 	if err := http.ListenAndServe(cfg.Server.Address, nil); err != nil {
 		logg.Error().Err(err).Msg("service is stopped")
