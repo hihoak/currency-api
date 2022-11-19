@@ -12,21 +12,21 @@ import (
 )
 
 type ExchangeMoneyRequest struct {
-	UserID int64
-	FromWalletID int64
-	ToWalletID int64
-	FromCurrency models.Currencies
-	ToCurrency models.Currencies
-	Course float64
-	Amount int64
+	UserID int64 `json:"user_id"`
+	FromWalletID int64 `json:"from_wallet_id"`
+	ToWalletID int64 `json:"to_wallet_id"`
+	FromCurrency models.Currencies `json:"from_currency"`
+	ToCurrency models.Currencies `json:"to_currency"`
+	Course float64 `json:"course"`
+	Amount int64 `json:"amount"`
 }
 
 type ExchangeMoneyResponse struct {
-	FromWallet *models.Wallet
-	ToWallet *models.Wallet
-	Quote float64
-	FromAmount int64
-	ToAmount int64
+	FromWallet *models.Wallet `json:"from_wallet"`
+	ToWallet *models.Wallet `json:"to_wallet"`
+	Quote float64 `json:"quote"`
+	FromAmount int64 `json:"from_amount"`
+	ToAmount int64 `json:"to_amount"`
 }
 
 func (w *Walleter) ExchangeMoney() func(http.ResponseWriter, *http.Request) {

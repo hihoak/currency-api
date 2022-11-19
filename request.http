@@ -76,10 +76,9 @@ Content-Type: application/json
 
 {
   "wallet": {
-    "id": 123,
-    "user_id": 123,
+    "user_id": 1,
     "currency": "USD",
-    "value": 2000
+    "value": 10
   }
 }
 
@@ -105,9 +104,9 @@ POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/wallet/exchange
 Content-Type: application/json
 
 {
-  "user_id": 123,
-  "from_wallet_id": 312,
-  "to_wallet_id": 222,
+  "user_id": 1,
+  "from_wallet_id": 1,
+  "to_wallet_id": 2,
   "from_currency": "RUB",
   "to_currency": "USD",
   "course": 0.016
