@@ -53,16 +53,16 @@ func (t *Timeline) ListCourses() func(http.ResponseWriter, *http.Request) {
 			return
 		}
 
-		fromTime, err := time.Parse("2006-01-02 15:04:05.999-07", requestJSON.FromTime)
+		fromTime, err := time.Parse("2006-01-02 15:04:05 -0700", requestJSON.FromTime)
 		if err != nil {
-			t.logg.Error().Err(err).Msgf("wrong format of date. Example: 2006-01-02 15:04:05.999-07")
-			http.Error(writer, fmt.Sprintf("failed to parse time: example: 2006-01-02 15:04:05.999-07: %v", err), http.StatusBadRequest)
+			t.logg.Error().Err(err).Msgf("wrong format of date. Example: 2006-01-02 15:04:05 -0700")
+			http.Error(writer, fmt.Sprintf("failed to parse time: example: 2006-01-02 15:04:05 -0700: %v", err), http.StatusBadRequest)
 			return
 		}
-		toTime, err := time.Parse("2006-01-02 15:04:05.999-07", requestJSON.ToTime)
+		toTime, err := time.Parse("2006-01-02 15:04:05 -0700", requestJSON.ToTime)
 		if err != nil {
-			t.logg.Error().Err(err).Msgf("wrong format of date. Example: 2006-01-02 15:04:05.999-07")
-			http.Error(writer, fmt.Sprintf("failed to parse time: example: 2006-01-02 15:04:05.999-07: %v", err), http.StatusBadRequest)
+			t.logg.Error().Err(err).Msgf("wrong format of date. Example: 2006-01-02 15:04:05 -0700")
+			http.Error(writer, fmt.Sprintf("failed to parse time: example: 2006-01-02 15:04:05 -0700: %v", err), http.StatusBadRequest)
 			return
 		}
 
