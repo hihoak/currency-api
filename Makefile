@@ -36,7 +36,7 @@ go-generate:
 up:
 	make down
 	make build
-	docker buildx build -f build/currency-api/Dockerfile . -t docker.io/soundsofanarchy/currency-api:latest --push --platform=linux/amd64
+	docker buildx build -f build/currency-api/Dockerfile . -t docker.io/soundsofanarchy/currency-api:latest --platform=linux/amd64
 	docker compose up -d
 
 down:
