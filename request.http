@@ -82,13 +82,13 @@ Content-Type: application/json
   }
 }
 
-### /wallet/create
+### /wallet/money/add
 POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/wallet/money/add
 Content-Type: application/json
 
 {
-  "id": 123,
-  "value": 2000
+  "id": 2,
+  "value": 10000
 }
 
 ### /wallet/list
@@ -109,6 +109,6 @@ Content-Type: application/json
   "to_wallet_id": 2,
   "from_currency": "RUB",
   "to_currency": "USD",
-  "course": 0.016
-  "amount":
+  "course": 0,
+  "amount": 1
 }
