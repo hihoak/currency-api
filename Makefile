@@ -32,3 +32,9 @@ migrate-down:
 go-generate:
 	buf generate --path "api/event"
 	go generate ./...
+
+up:
+	docker compose up -d
+
+down:
+	docker compose down

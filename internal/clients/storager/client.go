@@ -48,7 +48,7 @@ func (s *Storage) Connect(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
 	defer cancel()
 	db, err := sqlx.ConnectContext(ctx, "postgres",
-		fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable search_path=public",
+		fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 			s.host, s.port, s.user, s.password, s.dbname))
 	if err != nil {
 		return fmt.Errorf("%s: %w", err.Error(), errs.ErrConnectionFailed)
@@ -184,6 +184,92 @@ func (s *Storage) ListUsers(ctx context.Context, count, offset int64) ([]*models
 	}
 	s.log.Debug().Msgf("Successfully list events")
 	return events, nil
+}
+
+func (s *Storage) GetUserByLogin(ctx context.Context, username string) (*models.User, error) {
+	s.log.Debug().Msg("Start listing users")
+	query := `
+	SELECT *
+	FROM users
+	WHERE username = '$1'`
+	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
+	defer cancel()
+	rows, err := s.db.QueryxContext(ctx, query, username)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+	events, scanErr := s.fromSQLRowsToUsers(rows)
+	if err != nil {
+		return nil, fmt.Errorf("failed to scan users: %w", scanErr)
+	}
+	if len(events) == 0 {
+		return nil, fmt.Errorf("user with username %s not found: %w", username, errs.ErrNotFound)
+	}
+	s.log.Debug().Msgf("Successfully get user")
+	return events[0], nil
+}
+
+func (s *Storage) GetWallet(ctx context.Context, walletID int64) (*models.Wallet, error) {
+	s.log.Debug().Msg("Start getting wallet")
+	query := `
+	SELECT *
+	FROM wallets
+	WHERE id = $1`
+	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
+	defer cancel()
+	rows, err := s.db.QueryxContext(ctx, query, walletID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get wallet: %w", err)
+	}
+	wallets, err := s.fromSQLRowsToWallets(rows)
+	if err != nil {
+		return nil, fmt.Errorf("failed to scan wallets: %w", err)
+	}
+	if len(wallets) == 0 {
+		return nil, fmt.Errorf("wallet with id %d: %w", walletID, errs.ErrNotFound)
+	}
+	s.log.Debug().Msgf("Successfully get wallet")
+	return wallets[0], nil
+}
+
+func (s *Storage) AddMoneyToWallet(ctx context.Context, walletID int64, amount int64) (*models.Wallet, error) {
+	s.log.Debug().Msg("Start adding money to wallet")
+	query := `
+	UPDATE wallets
+	SET value = $2
+	WHERE id = $1
+	RETURNING value;`
+
+	wallet, err := s.GetWallet(ctx, walletID)
+	if err != nil {
+		return nil, err
+	}
+
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err != nil {
+			if err := tx.Rollback(); err != nil {
+				s.log.Error().Err(err).Msg("failed to rollback")
+			}
+		}
+	}()
+	rows, err := tx.QueryContext(ctx, query, walletID, wallet.Value + amount)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get wallet: %w", err)
+	}
+	var value int64
+	for rows.Next() {
+		if err = rows.Scan(&value); err != nil {
+			return nil, err
+		}
+	}
+
+	s.log.Debug().Msgf("Successfully get wallet")
+	wallet.Value = value
+	return wallet, nil
 }
 
 

@@ -1,9 +1,9 @@
 version: "3.8"
 services:
   postgres:
-    image: "postgres:15.0"
+    image: "postgres:14.0"
     ports:
-      - "6432:6432"
+      - "5432:5432"
     restart: always
     environment:
       POSTGRES_USER: postgres
@@ -18,16 +18,14 @@ services:
       - migrations
     restart: "always"
     environment:
-      SERVER_HOST: "0.0.0.0"
-      USE_IN_MEMORY_STORAGE: "false"
-      DB_HOST: "postgres"
-      DB_USER: "postgres"
-      DB_PASSWORD: "password"
+      CURRENCY_API_SERVER_ADDRESS: "0.0.0.0:8000"
+      CURRENCY_API_DATABASE_HOST: "postgres"
+      CURRENCY_API_DATABASE_PORT: "5432"
+      CURRENCY_API_DATABASE_PASSWORD: "password"
       LOG_LEVEL: "debug"
       SERVER_GRACEFUL_SHUTDOWN: "3s"
     ports:
       - "8000:8000"
-      - "9000:9000"
 
 volumes:
   postgres:

@@ -4,7 +4,7 @@ import "fmt"
 
 var (
 	ErrUserAlreadyExists = fmt.Errorf("user already exists")
-	ErrFailedToGetUnnesesaryInformation = fmt.Errorf("main logic is done, but can't get additional info")
+	ErrNotFound = fmt.Errorf("not found")
 
 	// Database errors
 	ErrConnectionFailed = fmt.Errorf("failed to connect to database")

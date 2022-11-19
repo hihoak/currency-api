@@ -17,7 +17,7 @@ type ServerSection struct {
 }
 
 type DatabaseSection struct {
-	Host     string `default:"localhost" env:"HOST"`
+	Host     string `default:"127.0.0.1" env:"HOST"`
 	Port     string `default:"6432" env:"PORT"`
 	User     string `default:"postgres" env:"USER"`
 	Password string `default:"" env:"PASSWORD"`

@@ -1,5 +1,5 @@
 ###
-POST http://localhost:8000/user/register
+POST http://51.250.48.195:8000/user/register
 Content-Type: application/json
 
 {"user":
@@ -28,7 +28,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://localhost:8000/user/list
+POST http://51.250.48.195:8000/user/list
 Content-Type: application/json
 
 {

@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS users
     blocked    boolean NOT NULL,
     registered   boolean NOT NULL,
     admin        boolean NOT NULL,
-    username     varchar(50) NOT NULL,
+    username     varchar(50) UNIQUE NOT NULL,
     password varchar(50) NOT NULL
 );
 
