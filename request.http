@@ -97,7 +97,7 @@ POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/wallet/list
 Content-Type: application/json
 
 {
-  "user_id": 123
+  "user_id": 1
 }
 
 ### /wallet/exchange

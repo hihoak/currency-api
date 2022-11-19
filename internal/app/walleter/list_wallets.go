@@ -11,7 +11,7 @@ import (
 )
 
 type ListUsersWalletsRequest struct {
-	UserID int64
+	UserID int64 `json:"user_id"`
 }
 
 type ListUsersWalletsResponse struct {
