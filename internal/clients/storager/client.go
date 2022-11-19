@@ -142,7 +142,7 @@ func (s *Storage) BlockOrUnblockUser(ctx context.Context, userID int64, block bo
 	UPDATE users
 	SET blocked = $2
 	WHERE id = $1;`
-	_, err := s.db.QueryxContext(ctx, q, true, userID, block)
+	_, err := s.db.QueryxContext(ctx, q, userID, block)
 	if err != nil {
 		return err
 	}
