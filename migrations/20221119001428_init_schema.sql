@@ -18,6 +18,20 @@ CREATE INDEX users_id_index ON users (
     id
 );
 
+CREATE TABLE IF NOT EXISTS wallets
+(
+    id       SERIAL PRIMARY KEY NOT NULL,
+    user_id  int NOT NULL,
+    currency varchar(10) NOT NULL,
+    value    int NOT NULL,
+    FOREIGN KEY ( user_id ) REFERENCES users ( id )
+);
+
+CREATE INDEX wallets_user_id_index ON wallets
+(
+    user_id
+);
+
 CREATE TABLE IF NOT EXISTS transactions
 (
     id          SERIAL PRIMARY KEY NOT NULL,
@@ -30,20 +44,6 @@ CREATE TABLE IF NOT EXISTS transactions
 );
 
 CREATE INDEX transactions_user_id_index ON transactions
-(
-    user_id
-);
-
-CREATE TABLE IF NOT EXISTS wallets
-(
-    id       SERIAL PRIMARY KEY NOT NULL,
-    user_id  int NOT NULL,
-    currency varchar(10) NOT NULL,
-    value    int NOT NULL,
-    FOREIGN KEY ( user_id ) REFERENCES users ( id )
-);
-
-CREATE INDEX wallets_user_id_index ON wallets
 (
     user_id
 );
