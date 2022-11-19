@@ -59,7 +59,7 @@ POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/user/info
 Content-Type: application/json
 
 {
-  "id": 123
+  "id": 1
 }
 
 ### /wallet/get

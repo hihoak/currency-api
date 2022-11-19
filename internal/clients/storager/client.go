@@ -312,7 +312,7 @@ func (s *Storage) GetUser(ctx context.Context, userID int64) (*models.User, erro
 	query := `
 	SELECT *
 	FROM users
-	WHERE id = '$1'`
+	WHERE id = $1`
 	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
 	defer cancel()
 	rows, err := s.db.QueryxContext(ctx, query, userID)
@@ -335,7 +335,7 @@ func (s *Storage) GetUserWallets(ctx context.Context, userID int64) ([]*models.W
 	query := `
 	SELECT *
 	FROM wallets
-	WHERE user_id = '$1'`
+	WHERE user_id = $1`
 	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
 	defer cancel()
 	rows, err := s.db.QueryxContext(ctx, query, userID)
@@ -358,7 +358,7 @@ func (s *Storage) GetUserWalletsTX(ctx context.Context, tx *sqlx.Tx, userID int6
 	query := `
 	SELECT *
 	FROM wallets
-	WHERE user_id = '$1'`
+	WHERE user_id = $1`
 	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
 	defer cancel()
 	rows, err := tx.QueryxContext(ctx, query, userID)
