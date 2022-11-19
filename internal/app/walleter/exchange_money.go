@@ -51,8 +51,8 @@ func (w *Walleter) ExchangeMoney() func(http.ResponseWriter, *http.Request) {
 
 		realCourse := w.exchange.GetCourse(requestJSON.FromCurrency, requestJSON.ToCurrency)
 		if math.Abs(realCourse - requestJSON.Course) > 0.00001 {
-			w.logg.Warn().Msgf("course was changed")
-			http.Error(writer, fmt.Sprintf("course was changed"), http.StatusConflict)
+			w.logg.Warn().Msgf("course was changed, current course is: %f", realCourse)
+			http.Error(writer, fmt.Sprintf("course was changed, current course is: %f", realCourse), http.StatusConflict)
 			return
 		}
 
