@@ -130,6 +130,6 @@ Content-Type: application/json
 {
   "from": "RUB",
   "to": "USD",
-  "from_time": "",
-  "to_time": ""
+  "from_time": "2006-01-02T15:04:05Z07:00",
+  "to_time": "2006-01-02T15:04:05Z07:00"
 }

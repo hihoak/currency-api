@@ -31,8 +31,8 @@ func New(logg *logger.Logger, storage Storager) *Timeline {
 type ListCoursesRequest struct {
 	From models.Currencies `json:"from"`
 	To models.Currencies `json:"to"`
-	FromTime time.Time `json:"from_time"`
-	ToTime time.Time `json:"to_time"`
+	FromTime string `json:"from_time"`
+	ToTime string `json:"to_time"`
 }
 
 type ListCoursesResponse struct {
@@ -53,7 +53,20 @@ func (t *Timeline) ListCourses() func(http.ResponseWriter, *http.Request) {
 			return
 		}
 
-		courses, err := t.storage.ListCourses(context.Background(), requestJSON.From, requestJSON.To, requestJSON.FromTime, requestJSON.ToTime)
+		fromTime, err := time.Parse("2006-01-02 15:04:05.999-07", requestJSON.FromTime)
+		if err != nil {
+			t.logg.Error().Err(err).Msgf("wrong format of date. Example: 2006-01-02 15:04:05.999-07")
+			http.Error(writer, fmt.Sprintf("failed to parse time: example: 2006-01-02 15:04:05.999-07: %v", err), http.StatusBadRequest)
+			return
+		}
+		toTime, err := time.Parse("2006-01-02 15:04:05.999-07", requestJSON.ToTime)
+		if err != nil {
+			t.logg.Error().Err(err).Msgf("wrong format of date. Example: 2006-01-02 15:04:05.999-07")
+			http.Error(writer, fmt.Sprintf("failed to parse time: example: 2006-01-02 15:04:05.999-07: %v", err), http.StatusBadRequest)
+			return
+		}
+
+		courses, err := t.storage.ListCourses(context.Background(), requestJSON.From, requestJSON.To, fromTime, toTime)
 		if err != nil {
 			if errors.Is(err, errs.ErrNotFound) {
 				t.logg.Error().Err(err).Msgf("not found courses %s to %s from %s to %s", requestJSON.From, requestJSON.To, requestJSON.FromTime, requestJSON.ToTime)
