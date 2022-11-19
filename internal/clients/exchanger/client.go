@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+type Storager interface {
+	SaveCourses(ctx context.Context, timeNow time.Time, fromCurrency, toCurrency models.Currencies, course float64) error
+}
+
 type Quoter interface {
 	GetQuote(from string, to string) (float64, error)
 }
@@ -21,10 +25,12 @@ type Exchage struct {
 	logg *logger.Logger
 	quoter Quoter
 
+	storage Storager
+
 	doneChan <-chan struct{}
 }
 
-func New(ctx context.Context, logg *logger.Logger, quoter Quoter) *Exchage {
+func New(ctx context.Context, logg *logger.Logger, quoter Quoter, storage Storager) *Exchage {
 	currentCourses := map[models.Currencies]*CurrenciesQuotes{
 		models.RUB: NewCurrenciesQuotes(models.RUB),
 		models.EUR: NewCurrenciesQuotes(models.EUR),
@@ -35,6 +41,7 @@ func New(ctx context.Context, logg *logger.Logger, quoter Quoter) *Exchage {
 		logg: logg,
 		quoter: quoter,
 		currentCourses: currentCourses,
+		storage: storage,
 
 		ticker: time.NewTicker(time.Second * 30),
 
@@ -47,6 +54,7 @@ func (e *Exchage) Start() {
 		for {
 			select {
 			case <-e.ticker.C:
+				timeNow := time.Now()
 				wg := sync.WaitGroup{}
 				for currency, currentCourse := range e.currentCourses {
 					for toCurrency := range currentCourse.Data {
@@ -59,6 +67,9 @@ func (e *Exchage) Start() {
 								return
 							}
 							e.currentCourses[from].Update(to, newQuote)
+							if err := e.storage.SaveCourses(context.Background(), timeNow, from, to, newQuote); err != nil {
+								e.logg.Error().Err(err).Msgf("failed to save courses to DB")
+							}
 						}(currency, toCurrency)
 					}
 				}

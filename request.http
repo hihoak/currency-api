@@ -118,6 +118,18 @@ POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/wallet/course
 Content-Type: application/json
 
 {
-  "from": "RUB",
+  "from": "USD",
   "to": "EUR"
+}
+
+
+### /course/list
+POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/course/list
+Content-Type: application/json
+
+{
+  "from": "RUB",
+  "to": "USD",
+  "from_time": "",
+  "to_time": ""
 }

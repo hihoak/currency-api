@@ -3,6 +3,7 @@ package storager
 import (
 	"github.com/hihoak/currency-api/internal/pkg/models"
 	"github.com/jmoiron/sqlx"
+	"time"
 )
 
 func (s *Storage) fromSQLRowsToUsers(rows *sqlx.Rows) ([]*models.User, error) {
@@ -37,4 +38,25 @@ func (s *Storage) fromSQLRowsToWallets(rows *sqlx.Rows) ([]*models.Wallet, error
 		wallets = append(wallets, &wallet)
 	}
 	return wallets, nil
+}
+
+func (s *Storage) fromSQLRowsToCourses(rows *sqlx.Rows) ([]*models.Course, error) {
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil {
+			s.log.Error().Err(closeErr).Msg("Failed to close rows")
+		}
+	}()
+	courses := make([]*models.Course, 0)
+	for rows.Next() {
+		var course models.Course
+		if scanErr := rows.StructScan(&course); scanErr != nil {
+			return nil, scanErr
+		}
+		courses = append(courses, &course)
+	}
+	return courses, nil
+}
+
+func (s *Storage) timeToSQLTimeWithTimezone(t time.Time) string {
+	return t.Format("2006-01-02 15:04:05.999-07")
 }

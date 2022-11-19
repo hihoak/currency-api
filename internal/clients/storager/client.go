@@ -492,145 +492,37 @@ func (s *Storage) MoneyExchange(
 	return fromWallet, toWallet, nil
 }
 
+func (s *Storage) SaveCourses(ctx context.Context, timeNow time.Time, fromCurrency, toCurrency models.Currencies, course float64) error {
+	s.log.Debug().Msgf("saving course %s to %s for %s", fromCurrency, toCurrency, timeNow)
+	query := `
+	INSERT INTO courses (timestamp, from_currency, to_currency, course)
+	VALUES ($1, $2, $3, $4)`
+	_, err := s.db.QueryxContext(ctx, query, s.timeToSQLTimeWithTimezone(timeNow), fromCurrency, toCurrency, course)
+	if err != nil {
+		return err
+	}
+	s.log.Debug().Msgf("successfully saved course")
+	return nil
+}
 
-//func (s *Storage) AddEvent(ctx context.Context, title string) error {
-//	query := `
-//		INSERT INTO events (id, title)
-//        VALUES (:id, :title)`
-//	event := &storage.Event{
-//		Title: title,
-//	}
-//	event.ID = xid.New().String()
-//	s.log.Debug().Msgf("Start adding event with id %s", event.ID)
-//	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
-//	defer cancel()
-//	_, err := s.db.NamedExecContext(ctx, query, event)
-//	if err != nil {
-//		return fmt.Errorf("%s: %w", err.Error(), errs.ErrAddEvent)
-//	}
-//	s.log.Debug().Msgf("Successfully add event with id %s", event.ID)
-//	return err
-//}
-//
-//func (s *Storage) ModifyEvent(ctx context.Context, event *storage.Event) error {
-//	s.log.Debug().Msgf("Start editing event with id %s", event.ID)
-//	query := `
-//	UPDATE events
-//	SET title = :title
-//	WHERE id = :id;`
-//	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
-//	defer cancel()
-//	_, err := s.db.NamedExecContext(ctx, query, event)
-//	if err != nil {
-//		return fmt.Errorf("%s: %w", err.Error(), errs.ErrUpdateEvent)
-//	}
-//	s.log.Debug().Msgf("Successfully update event with id %s", event.ID)
-//	return nil
-//}
-//
-//func (s *Storage) DeleteEvent(ctx context.Context, id string) error {
-//	s.log.Debug().Msgf("Start deleting event with id %s", id)
-//	query := `DELETE FROM events WHERE id=:id;`
-//	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
-//	defer cancel()
-//	_, err := s.db.NamedExecContext(ctx, query, map[string]interface{}{"id": id})
-//	if err != nil {
-//		return fmt.Errorf("%s: %w", err.Error(), errs.ErrDeleteEvent)
-//	}
-//	s.log.Debug().Msgf("Successfully deleted event with id %s", id)
-//	return nil
-//}
-//
-//func (s *Storage) GetEvent(ctx context.Context, id string) (*storage.Event, error) {
-//	s.log.Debug().Msgf("Start getting event with id %s", id)
-//	query := `
-//	SELECT id, title
-//	FROM events
-//	WHERE id=$1;
-//	`
-//	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
-//	defer cancel()
-//	row := s.db.QueryRowxContext(ctx, query, id)
-//	var event storage.Event
-//	if err := row.StructScan(&event); err != nil {
-//		if errors.Is(err, sql.ErrNoRows) {
-//			return nil, fmt.Errorf("%s: %w", err.Error(), errs.ErrNotFoundEvent)
-//		}
-//		return nil, fmt.Errorf("%s: %w", err.Error(), errs.ErrGetEvent)
-//	}
-//	s.log.Debug().Msgf("Successfully got event with id %s", id)
-//	return &event, nil
-//}
-//
-//func (s *Storage) ListEvents(ctx context.Context) ([]*storage.Event, error) {
-//	s.log.Debug().Msg("Start listing events")
-//	query := `
-//	SELECT id, title
-//	FROM events;
-//	`
-//	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
-//	defer cancel()
-//	rows, err := s.db.QueryxContext(ctx, query)
-//	if err != nil {
-//		return nil, fmt.Errorf("%s: %w", err.Error(), errs.ErrListEvents)
-//	}
-//	events, scanErr := s.fromSQLRowsToEvents(rows)
-//	if err != nil {
-//		return nil, fmt.Errorf("%s: %w", scanErr.Error(), errs.ErrListEvents)
-//	}
-//	s.log.Debug().Msgf("Successfully list events")
-//	return events, nil
-//}
-//
-//func (s *Storage) ListEventsToNotify(ctx context.Context,
-//	fromTime time.Time, period time.Duration,
-//) ([]*storage.Event, error) {
-//	s.log.Debug().Msg("ListEventsToNotify - start method")
-//	query := strings.Builder{}
-//	query.WriteString(`
-//	SELECT id, title, start_date, user_id
-//	FROM events `)
-//	sqlFromTimeStr := s.timeToSQLTimeWithTimezone(fromTime)
-//	sqlToTimeStr := s.timeToSQLTimeWithTimezone(fromTime.Add(period))
-//	query.WriteString(
-//		fmt.Sprintf("WHERE notify_date >= '%s' AND notify_date <= '%s';",
-//			sqlFromTimeStr, sqlToTimeStr))
-//	s.log.Debug().Msgf("ListEventsToNotify - try to execute query: '%s'", query.String())
-//
-//	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
-//	defer cancel()
-//	rows, err := s.db.QueryxContext(ctx, query.String())
-//	if err != nil {
-//		return nil, fmt.Errorf("%s: %w", err.Error(), errs.ErrListEventsToNotify)
-//	}
-//	events, err := s.fromSQLRowsToEvents(rows)
-//	if err != nil {
-//		return nil, fmt.Errorf("ListEventsToNotify - failed to scan events from rows: %w", err)
-//	}
-//	s.log.Debug().Msgf("ListEventsToNotify: got '%d' events to notify", len(events))
-//	return events, nil
-//}
-//
-//func (s *Storage) DeleteOldEventsBeforeTime(
-//	ctx context.Context,
-//	fromTime time.Time,
-//	maxLiveTime time.Duration,
-//) ([]*storage.Event, error) {
-//	s.log.Debug().Msg("DeleteOldEventsBeforeTime: start deleting old events")
-//	query := strings.Builder{}
-//	query.WriteString("DELETE FROM events ")
-//	query.WriteString(fmt.Sprintf("WHERE '%s' - end_date > '%s' RETURNING *;",
-//		s.timeToSQLTimeWithTimezone(fromTime),
-//		s.durationToSQLInterval(maxLiveTime)))
-//	s.log.Debug().Msgf("DeleteOldEventsBeforeTime: deleting with query: %s", query.String())
-//	rows, err := s.db.QueryxContext(ctx, query.String())
-//	if err != nil {
-//		return nil, fmt.Errorf("failed to delete old events with query: %s: %w", query.String(), err)
-//	}
-//	events, err := s.fromSQLRowsToEvents(rows)
-//	if err != nil {
-//		return nil, fmt.Errorf("ListEventsToNotify - failed to scan events from rows: %w", err)
-//	}
-//	s.log.Debug().Msgf("DeleteOldEventsBeforeTime: delete '%d' old events", len(events))
-//	return events, nil
-//}
+func (s *Storage) ListCourses(ctx context.Context, fromCurrency, toCurrency models.Currencies, fromTime time.Time, toTime time.Time) ([]*models.Course, error) {
+	s.log.Debug().Msgf("Start ListCourses")
+	q := `
+	SELECT *
+	FROM courses `
+	sqlFromTimeStr := s.timeToSQLTimeWithTimezone(fromTime)
+	sqlToTimeStr := s.timeToSQLTimeWithTimezone(toTime)
+	q += fmt.Sprintf("WHERE timestamp >= '%s' AND timestamp <= '%s' AND from_currency = '%s' AND to_currency = '%s';", sqlFromTimeStr, sqlToTimeStr, fromCurrency, toCurrency)
+
+	rows, err := s.db.QueryxContext(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+	courses, err := s.fromSQLRowsToCourses(rows)
+	if err != nil {
+		return nil, err
+	}
+
+	s.log.Debug().Msgf("finish ListCourses")
+	return courses, nil
+}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"github.com/hihoak/currency-api/internal/app/registrator"
+	"github.com/hihoak/currency-api/internal/app/timeliner"
 	"github.com/hihoak/currency-api/internal/app/users"
 	"github.com/hihoak/currency-api/internal/app/walleter"
 	"github.com/hihoak/currency-api/internal/clients/exchanger"
@@ -50,10 +51,11 @@ func main() {
 
 	ctx, cancel := signal.NotifyContext(ctx, syscall.SIGTERM, syscall.SIGINT)
 	defer cancel()
-	exch := exchanger.New(ctx, logg, quoter)
+	exch := exchanger.New(ctx, logg, quoter, store)
 	// start inner exchanger with bigger time step
 	exch.Start()
 
+	timeline := timeliner.New(logg, store)
 	reg := registrator.New(logg, store)
 	usr := users.New(logg, store)
 	wal := walleter.New(logg, store, exch)
@@ -72,6 +74,8 @@ func main() {
 	http.HandleFunc("/wallet/money/add", wal.AddMoneyToWallet())
 	http.HandleFunc("/wallet/exchange", wal.ExchangeMoney())
 	http.HandleFunc("/wallet/course", wal.GetCourse())
+
+	http.HandleFunc("/course/list", timeline.ListCourses())
 
 	if err := http.ListenAndServe(cfg.Server.Address, nil); err != nil {
 		logg.Error().Err(err).Msg("service is stopped")
