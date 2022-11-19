@@ -1,0 +1,34 @@
+version: "3.8"
+services:
+  postgres:
+    image: "postgres:15.0"
+    ports:
+      - "6432:6432"
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - "postgres:/var/lib/postgresql/data"
+
+  calendar-api:
+    image: "docker.io/soundsofanarchy/currency-api:latest"
+    depends_on:
+      - postgres
+      - migrations
+    restart: "always"
+    environment:
+      SERVER_HOST: "0.0.0.0"
+      USE_IN_MEMORY_STORAGE: "false"
+      DB_HOST: "postgres"
+      DB_USER: "postgres"
+      DB_PASSWORD: "password"
+      LOG_LEVEL: "debug"
+      SERVER_GRACEFUL_SHUTDOWN: "3s"
+    ports:
+      - "8000:8000"
+      - "9000:9000"
+
+volumes:
+  postgres:
+    driver: local

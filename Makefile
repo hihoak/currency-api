@@ -10,7 +10,7 @@ DB_STRING:="host=localhost port=6432 user=postgres dbname=postgres sslmode=disab
 endif
 
 build:
-	go build -o bin/currency-api cmd/currency-api/main.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o bin/currency-api cmd/currency-api/main.go
 
 test:
 	go test -race ./...
