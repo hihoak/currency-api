@@ -9,7 +9,7 @@ import (
 )
 
 type LoggerSection struct {
-	LogLevel string `default:"info" env:"LOG_LEVEL"`
+	LogLevel string `default:"debug" env:"LOG_LEVEL"`
 }
 
 type ServerSection struct {

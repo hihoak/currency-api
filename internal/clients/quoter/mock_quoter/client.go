@@ -1,6 +1,7 @@
 package mock_quoter
 
 import (
+	"github.com/hihoak/currency-api/internal/pkg/logger"
 	"github.com/hihoak/currency-api/internal/pkg/models"
 	"math/rand"
 	"sync"
@@ -8,11 +9,12 @@ import (
 )
 
 type Quote struct {
+	logg *logger.Logger
 	mu *sync.RWMutex
 	quotes map[models.Currencies]map[models.Currencies]float64
 }
 
-func New() *Quote {
+func New(logg *logger.Logger) *Quote {
 	return &Quote{
 		quotes: map[models.Currencies]map[models.Currencies]float64{
 			models.RUB: {
@@ -29,6 +31,7 @@ func New() *Quote {
 			},
 		},
 		mu: &sync.RWMutex{},
+		logg: logg,
 	}
 }
 
@@ -38,11 +41,12 @@ func (q *Quote) Start() {
 			q.mu.Lock()
 			for from, currencies := range q.quotes {
 				for to := range currencies {
-					q.quotes[from][to] += (rand.Float64() - 0.35) / 5
+					q.quotes[from][to] += q.quotes[from][to] / 500 * (rand.Float64() - 0.5)
 				}
 			}
 			q.mu.Unlock()
-			time.Sleep(time.Second)
+			time.Sleep(time.Second * 5)
+			q.logg.Debug().Msgf("new courses: %v", q.quotes)
 		}
 	}()
 }

@@ -61,6 +61,7 @@ func (e *Exchage) Start() {
 					}(currency, toCurrency)
 				}
 			}
+			e.logg.Debug().Msgf("Exchage: successfully update courses: %v", e.currentCourses)
 			wg.Wait()
 		case <-e.doneChan:
 			e.logg.Info().Msg("stop consuming quotes...")

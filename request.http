@@ -112,3 +112,12 @@ Content-Type: application/json
   "course": 1,
   "amount": 1
 }
+
+### /wallet/courses
+POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/wallet/course
+Content-Type: application/json
+
+{
+  "from": "RUB",
+  "to": "USD"
+}

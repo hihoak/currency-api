@@ -22,8 +22,7 @@ services:
       CURRENCY_API_DATABASE_HOST: "postgres"
       CURRENCY_API_DATABASE_PORT: "5432"
       CURRENCY_API_DATABASE_PASSWORD: "password"
-      LOG_LEVEL: "debug"
-      SERVER_GRACEFUL_SHUTDOWN: "3s"
+      CURRENCY_API_DATABASE_LOGGER_LOG_LEVEL: "debug"
     ports:
       - "8000:8000"
 
