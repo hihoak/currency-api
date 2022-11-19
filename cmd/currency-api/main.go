@@ -44,7 +44,7 @@ func main() {
 		}
 	}()
 
-	quoter := mock_quoter.New()
+	quoter := mock_quoter.New(logg)
 	// start mock quotes
 	quoter.Start()
 
