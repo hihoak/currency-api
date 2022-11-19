@@ -43,6 +43,12 @@ func (w *Walleter) ExchangeMoney() func(http.ResponseWriter, *http.Request) {
 			return
 		}
 
+		if requestJSON.Amount <= 0 {
+			w.logg.Warn().Msgf("amount can't be equal or less than zero")
+			http.Error(writer, fmt.Sprintf("amount can't be equal or less than zero"), http.StatusBadRequest)
+			return
+		}
+
 		realCourse := w.exchange.GetCourse(requestJSON.FromCurrency, requestJSON.ToCurrency)
 		if math.Abs(realCourse - requestJSON.Course) < 0.00001 {
 			w.logg.Warn().Msgf("course was changed")

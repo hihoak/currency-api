@@ -110,5 +110,5 @@ Content-Type: application/json
   "from_currency": "RUB",
   "to_currency": "USD",
   "course": 0.016
-
+  "amount":
 }
