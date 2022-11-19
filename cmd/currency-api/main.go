@@ -71,6 +71,7 @@ func main() {
 	http.HandleFunc("/wallet/create", wal.CreateNewWallet())
 	http.HandleFunc("/wallet/money/add", wal.AddMoneyToWallet())
 	http.HandleFunc("/wallet/exchange", wal.ExchangeMoney())
+	http.HandleFunc("/wallet/course", wal.GetCourse())
 
 	if err := http.ListenAndServe(cfg.Server.Address, nil); err != nil {
 		logg.Error().Err(err).Msg("service is stopped")
