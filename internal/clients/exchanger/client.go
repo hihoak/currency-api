@@ -44,28 +44,30 @@ func New(ctx context.Context, logg *logger.Logger, quoter Quoter) *Exchage {
 
 func (e *Exchage) Start() {
 	go func() {
-		select {
-		case <-e.ticker.C:
-			wg := sync.WaitGroup{}
-			for currency, currentCourse := range e.currentCourses {
-				for toCurrency := range currentCourse.Data {
-					wg.Add(1)
-					go func(from, to models.Currencies) {
-						defer wg.Done()
-						newQuote, err := e.quoter.GetQuote(string(from), string(to))
-						if err != nil {
-							e.logg.Error().Err(err).Msgf("failed to get quote")
-							return
-						}
-						e.currentCourses[from].Update(to, newQuote)
-					}(currency, toCurrency)
+		for {
+			select {
+			case <-e.ticker.C:
+				wg := sync.WaitGroup{}
+				for currency, currentCourse := range e.currentCourses {
+					for toCurrency := range currentCourse.Data {
+						wg.Add(1)
+						go func(from, to models.Currencies) {
+							defer wg.Done()
+							newQuote, err := e.quoter.GetQuote(string(from), string(to))
+							if err != nil {
+								e.logg.Error().Err(err).Msgf("failed to get quote")
+								return
+							}
+							e.currentCourses[from].Update(to, newQuote)
+						}(currency, toCurrency)
+					}
 				}
+				e.logg.Debug().Msgf("Exchage: successfully update courses: %v", e.currentCourses)
+				wg.Wait()
+			case <-e.doneChan:
+				e.logg.Info().Msg("stop consuming quotes...")
+				return
 			}
-			e.logg.Debug().Msgf("Exchage: successfully update courses: %v", e.currentCourses)
-			wg.Wait()
-		case <-e.doneChan:
-			e.logg.Info().Msg("stop consuming quotes...")
-			return
 		}
 	}()
 }

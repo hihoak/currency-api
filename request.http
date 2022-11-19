@@ -119,5 +119,5 @@ Content-Type: application/json
 
 {
   "from": "RUB",
-  "to": "USD"
+  "to": "EUR"
 }
