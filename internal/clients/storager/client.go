@@ -175,7 +175,7 @@ func (s *Storage) GetUserByLogin(ctx context.Context, username string) (*models.
 	query := `
 	SELECT *
 	FROM users
-	WHERE username = '$1'`
+	WHERE username = $1`
 	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
 	defer cancel()
 	rows, err := s.db.QueryxContext(ctx, query, username)
@@ -216,20 +216,37 @@ func (s *Storage) GetWallet(ctx context.Context, walletID int64) (*models.Wallet
 	return wallets[0], nil
 }
 
+func (s *Storage) GetWalletTX(ctx context.Context, tx *sqlx.Tx, walletID int64) (*models.Wallet, error) {
+	s.log.Debug().Msg("Start getting wallet")
+	query := `
+	SELECT *
+	FROM wallets
+	WHERE id = $1`
+	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
+	defer cancel()
+	rows, err := tx.QueryxContext(ctx, query, walletID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get wallet: %w", err)
+	}
+	wallets, err := s.fromSQLRowsToWallets(rows)
+	if err != nil {
+		return nil, fmt.Errorf("failed to scan wallets: %w", err)
+	}
+	if len(wallets) == 0 {
+		return nil, fmt.Errorf("wallet with id %d: %w", walletID, errs.ErrNotFound)
+	}
+	s.log.Debug().Msgf("Successfully get wallet")
+	return wallets[0], nil
+}
+
 func (s *Storage) AddMoneyToWallet(ctx context.Context, walletID int64, amount int64) (*models.Wallet, error) {
 	s.log.Debug().Msg("Start adding money to wallet")
-	query := `
-	UPDATE wallets
-	SET value = $2
-	WHERE id = $1
-	RETURNING value;`
-
 	wallet, err := s.GetWallet(ctx, walletID)
 	if err != nil {
 		return nil, err
 	}
 
-	tx, err := s.db.BeginTx(ctx, nil)
+	tx, err := s.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -240,22 +257,13 @@ func (s *Storage) AddMoneyToWallet(ctx context.Context, walletID int64, amount i
 			}
 		}
 	}()
-	rows, err := tx.QueryContext(ctx, query, walletID, wallet.Value + amount)
+	newValue := wallet.Value + amount
+	_, err = s.SetMoneyToWalletTX(ctx, tx, walletID, newValue)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get wallet: %w", err)
-	}
-	var value int64
-	for rows.Next() {
-		if err = rows.Scan(&value); err != nil {
-			return nil, err
-		}
+		return nil, err
 	}
 
-	query = `
-	INSERT INTO transactions (wallet_id, user_id, date, operation_name)
-	VALUES ($1, $2, now(), 'ADD MONEY')
-	RETURNING id`
-	_, err = tx.QueryContext(ctx, query, walletID, wallet.UserID)
+	err = s.AddTransactionTX(ctx, tx, walletID, wallet.UserID, "ADD MONEY")
 	if err != nil {
 		return nil, err
 	}
@@ -265,8 +273,38 @@ func (s *Storage) AddMoneyToWallet(ctx context.Context, walletID int64, amount i
 	}
 
 	s.log.Debug().Msgf("Successfully add money to wallet")
-	wallet.Value = value
+	wallet.Value = newValue
 	return wallet, nil
+}
+
+func (s *Storage) AddTransactionTX(ctx context.Context, tx *sqlx.Tx, walletID int64, userID int64, operationName string) error {
+	query := `
+	INSERT INTO transactions (wallet_id, user_id, date, operation_name)
+	VALUES ($1, $2, now(), $3)
+	RETURNING id`
+	_, err := tx.QueryxContext(ctx, query, walletID, userID, operationName)
+	return err
+}
+
+func (s *Storage) SetMoneyToWalletTX(ctx context.Context, tx *sqlx.Tx, walletID int64, value int64) (int64, error) {
+	s.log.Info().Msg("SetMoneyToWalletTX start")
+	q := `
+	UPDATE wallets
+	SET value = $2
+	WHERE id = $1
+	RETURNING value;`
+	res, err := tx.QueryxContext(ctx, q, walletID, value)
+	if err != nil {
+		return 0, err
+	}
+	var id int64
+	for res.Next() {
+		if err = res.Scan(&id); err != nil {
+			return 0, err
+		}
+	}
+
+	return id, err
 }
 
 func (s *Storage) GetUser(ctx context.Context, userID int64) (*models.User, error) {
@@ -301,6 +339,29 @@ func (s *Storage) GetUserWallets(ctx context.Context, userID int64) ([]*models.W
 	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
 	defer cancel()
 	rows, err := s.db.QueryxContext(ctx, query, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get wallets: %w", err)
+	}
+	wallets, scanErr := s.fromSQLRowsToWallets(rows)
+	if err != nil {
+		return nil, fmt.Errorf("failed to scan wallets: %w", scanErr)
+	}
+	if len(wallets) == 0 {
+		return nil, fmt.Errorf("wallets with user_id %d not found: %w", userID, errs.ErrNotFound)
+	}
+	s.log.Debug().Msgf("Successfully get wallets")
+	return wallets, nil
+}
+
+func (s *Storage) GetUserWalletsTX(ctx context.Context, tx *sqlx.Tx, userID int64) ([]*models.Wallet, error) {
+	s.log.Debug().Msgf("Start listing wallets for user '%d'", userID)
+	query := `
+	SELECT *
+	FROM wallets
+	WHERE user_id = '$1'`
+	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
+	defer cancel()
+	rows, err := tx.QueryxContext(ctx, query, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get wallets: %w", err)
 	}
@@ -351,6 +412,84 @@ func (s *Storage) SaveWalletUnary(ctx context.Context, wallet *models.Wallet) (i
 	}
 	s.log.Debug().Msgf("storage: wallet saved successfully")
 	return id, nil
+}
+
+func (s *Storage) MoneyExchange(
+	ctx context.Context,
+	userID int64,
+	fromWalletID int64,
+	toWalletID int64,
+	fromAmount int64,
+	toAmount int64,
+) (*models.Wallet, *models.Wallet, error) {
+	s.log.Info().Msgf("start MoneyExhange from %d to %d", fromWalletID, toWalletID)
+	tx, err := s.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer func() {
+		if err != nil {
+			if err = tx.Rollback(); err != nil {
+				s.log.Error().Err(err).Msg("failed to rollback transaction")
+			}
+		}
+	}()
+
+	userWallets, err := s.GetUserWalletsTX(ctx, tx, fromWalletID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var fromWallet, toWallet *models.Wallet
+	for _, wallet := range userWallets {
+		if wallet.ID == fromWalletID {
+			fromWallet = wallet
+			continue
+		}
+		if wallet.ID == toWalletID {
+			toWallet = wallet
+		}
+	}
+
+	if fromWallet == nil {
+		s.log.Warn().Msgf("not found wallet with id %d for user with id %d", fromWalletID, userID)
+		return nil, nil, fmt.Errorf("not found wallet with id %d for user with id %d: %w", fromWalletID, userID, errs.ErrNotFound)
+	}
+	if toWallet == nil {
+		s.log.Warn().Msgf("not found wallet with id %d for user with id %d", toWalletID, userID)
+		return nil, nil, fmt.Errorf("not found wallet with id %d for user with id %d: %w", toWalletID, userID, errs.ErrNotFound)
+	}
+
+	if fromWallet.Value < fromAmount {
+		s.log.Warn().Msgf("not much money on the wallet id %d for user with id %d", fromWallet, userID)
+		return nil, nil, fmt.Errorf("not much money on the wallet id %d for user with id %d: %w", fromWallet, userID, errs.ErrNotEnoughMoney)
+	}
+
+	newFromWalletValue := fromWallet.Value - fromAmount
+	_, err = s.SetMoneyToWalletTX(ctx, tx, fromWalletID, newFromWalletValue)
+	if err != nil {
+		return nil, nil, err
+	}
+	newToWalletValue := toWallet.Value + toAmount
+	_, err = s.SetMoneyToWalletTX(ctx, tx, toWalletID, toWallet.Value + newToWalletValue)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	err = s.AddTransactionTX(ctx, tx, fromWalletID, userID, "EXCHANGE MONEY")
+	if err != nil {
+		return nil, nil, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return nil, nil, err
+	}
+	s.log.Info().Msgf("start MoneyExhange from %d to %d", fromWalletID, toWalletID)
+
+	fromWallet.Value = newFromWalletValue
+	toWallet.Value = newToWalletValue
+	return fromWallet, toWallet, nil
 }
 
 

@@ -18,7 +18,12 @@ type Currencies string
 const (
 	RUB = "RUB"
 	USD = "USD"
+	EUR = "EUR"
 )
+
+func (c Currencies) String() string {
+	return string(c)
+}
 
 type Wallet struct {
 	ID int64

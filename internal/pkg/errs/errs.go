@@ -5,6 +5,7 @@ import "fmt"
 var (
 	ErrUserAlreadyExists = fmt.Errorf("user already exists")
 	ErrNotFound = fmt.Errorf("not found")
+	ErrNotEnoughMoney = fmt.Errorf("not enough money")
 
 	// Database errors
 	ErrConnectionFailed = fmt.Errorf("failed to connect to database")

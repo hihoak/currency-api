@@ -35,8 +35,8 @@ POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/login
 Content-Type: application/json
 
 {
-  "username": "artem",
-  "password": "supersecret",
+  "username": "artemikhaylov",
+  "password": "secretpass"
 }
 
 ### /user/block   block == false - will unblock
@@ -95,4 +95,26 @@ Content-Type: application/json
 {
   "id": 123,
   "value": 2000
+}
+
+### /wallet/list
+POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/wallet/list
+Content-Type: application/json
+
+{
+  "user_id": 123
+}
+
+### /wallet/exchange
+POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/wallet/exchange
+Content-Type: application/json
+
+{
+  "user_id": 123,
+  "from_wallet_id": 312,
+  "to_wallet_id": 222,
+  "from_currency": "RUB",
+  "to_currency": "USD",
+  "course": 0.016
+
 }

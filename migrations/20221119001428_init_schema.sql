@@ -35,18 +35,6 @@ CREATE INDEX transactions_user_id_index ON transactions
     user_id
 );
 
-CREATE TABLE IF NOT EXISTS register_requests
-(
-    id      SERIAL PRIMARY KEY NOT NULL,
-    user_id int NOT NULL,
-    FOREIGN KEY ( user_id ) REFERENCES users ( id )
-);
-
-CREATE INDEX register_requests_user_id_index ON register_requests
-(
-    user_id
-);
-
 CREATE TABLE IF NOT EXISTS wallets
 (
     id       SERIAL PRIMARY KEY NOT NULL,
