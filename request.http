@@ -45,7 +45,7 @@ Content-Type: application/json
 
 {
   "user": {
-    "id": 132,
+    "id": 132
   },
   "block": false
 }

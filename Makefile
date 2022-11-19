@@ -34,6 +34,7 @@ go-generate:
 	go generate ./...
 
 up:
+	sudo docker pull docker.io/soundsofanarchy/currency-api:latest
 	docker compose up -d
 
 down:
