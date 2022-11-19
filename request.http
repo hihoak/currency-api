@@ -1,0 +1,37 @@
+###
+POST http://localhost:8000/user/register
+Content-Type: application/json
+
+{"user":
+  { "name": "artem", "middle_name": "mihaylov",
+    "mail": "artem1@inbox.ru", "phone_number": "+1112312",
+    "blocked": false,  "registered": false,
+    "admin": true, "username": "artemikhaylov",
+    "password": "secretpass" },
+  "wallet": { "currency": "USD", "value": 3000 }
+}
+
+###
+POST http://localhost:8000/user/approve
+Content-Type: application/json
+
+{"user":
+{ "id": 13 }
+}
+
+###
+POST http://localhost:8000/user/block
+Content-Type: application/json
+
+{"user":
+{ "id": 13 }
+}
+
+###
+POST http://localhost:8000/user/list
+Content-Type: application/json
+
+{
+  "count": 10,
+  "offset": 0
+}
