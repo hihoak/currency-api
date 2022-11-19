@@ -72,7 +72,7 @@ func (s *Storage) Close() error {
 }
 
 func (s *Storage) SaveNewUser(ctx context.Context, user *models.User, wallet *models.Wallet) (int64, error) {
-	s.log.Debug().Msgf("storage: start saving user: %s", user.Username)
+	s.log.Debug().Msgf("storage: start saving user: %s", user.PhoneNumber)
 
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -85,12 +85,12 @@ func (s *Storage) SaveNewUser(ctx context.Context, user *models.User, wallet *mo
 		}
 	}()
 	query := `
-	INSERT INTO users (name, middle_name, surname, mail, phone_number, blocked, registered, admin, username, password)
-	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+	INSERT INTO users (name, middle_name, surname, mail, phone_number, blocked, registered, admin, password)
+	VALUES ($1, $2, $3, $4, $5, false, false, false, $6)
 	RETURNING id`
 	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
 	defer cancel()
-	res, err := tx.QueryContext(ctx, query, user.Name, user.MiddleName, user.Surname, user.Mail, user.PhoneNumber, user.Blocked, user.Registered, user.Admin, user.Username, user.Password)
+	res, err := tx.QueryContext(ctx, query, user.Name, user.MiddleName, user.Surname, user.Mail, user.PhoneNumber, user.Password)
 	if err != nil {
 		var dbErr *pq.Error
 		if errors.As(err, &dbErr) {
@@ -170,15 +170,15 @@ func (s *Storage) ListUsers(ctx context.Context, count, offset int64) ([]*models
 	return events, nil
 }
 
-func (s *Storage) GetUserByLogin(ctx context.Context, username string) (*models.User, error) {
+func (s *Storage) GetUserByPhoneNumberOrEmail(ctx context.Context, phoneNumber, mail string) (*models.User, error) {
 	s.log.Debug().Msg("Start listing users")
 	query := `
 	SELECT *
 	FROM users
-	WHERE username = $1`
+	WHERE phone_number = $1 or mail = $2`
 	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
 	defer cancel()
-	rows, err := s.db.QueryxContext(ctx, query, username)
+	rows, err := s.db.QueryxContext(ctx, query, phoneNumber, mail)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
@@ -187,7 +187,7 @@ func (s *Storage) GetUserByLogin(ctx context.Context, username string) (*models.
 		return nil, fmt.Errorf("failed to scan users: %w", scanErr)
 	}
 	if len(events) == 0 {
-		return nil, fmt.Errorf("user with username %s not found: %w", username, errs.ErrNotFound)
+		return nil, fmt.Errorf("user with phoneNumber %s or email %s not found: %w", phoneNumber, mail, errs.ErrNotFound)
 	}
 	s.log.Debug().Msgf("Successfully get user")
 	return events[0], nil

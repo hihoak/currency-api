@@ -11,12 +11,7 @@ Content-Type: application/json
     "blocked": false,
     "registered": false,
     "admin": true,
-    "username": "artemikhaylov",
     "password": "secretpass"
-  },
-  "wallet": {
-    "currency": "USD",
-    "value": 3000
   }
 }
 

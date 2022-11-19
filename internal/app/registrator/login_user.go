@@ -10,7 +10,8 @@ import (
 )
 
 type LoginUserRequest struct {
-	Username string
+	PhoneNumber string
+	Email string
 	Password string
 }
 
@@ -28,7 +29,7 @@ func (r *Registrator) LoginUser() func(http.ResponseWriter, *http.Request) {
 			return
 		}
 
-		user, err := r.storage.GetUserByLogin(context.Background(), requestJSON.Username)
+		user, err := r.storage.GetUserByPhoneNumberOrEmail(context.Background(), requestJSON.PhoneNumber, requestJSON.Email)
 		if err != nil {
 			if errors.Is(err, errs.ErrNotFound) {
 				r.logg.Error().Err(err).Msgf("user not found")

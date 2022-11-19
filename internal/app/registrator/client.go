@@ -8,7 +8,7 @@ import (
 
 type Storager interface {
 	SaveNewUser(ctx context.Context, user *models.User, wallet *models.Wallet) (int64, error)
-	GetUserByLogin(ctx context.Context, login string) (*models.User, error)
+	GetUserByPhoneNumberOrEmail(ctx context.Context, phoneNumber, email string) (*models.User, error)
 	ApproveUsersRequest(ctx context.Context, userID int64) error
 }
 

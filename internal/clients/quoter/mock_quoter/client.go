@@ -28,6 +28,7 @@ func New() *Quote {
 				models.RUB: 62.95,
 			},
 		},
+		mu: &sync.RWMutex{},
 	}
 }
 

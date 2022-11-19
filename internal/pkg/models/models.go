@@ -10,7 +10,6 @@ type User struct {
 	Blocked bool `json:"blocked" db:"blocked"`
 	Registered bool `json:"registered" db:"registered"`
 	Admin bool `json:"admin" db:"admin"`
-	Username string `json:"username" db:"username"`
 	Password string `json:"password" db:"password"`
 }
 

@@ -12,8 +12,6 @@ import (
 
 type RegisterUserRequest struct {
 	User *models.User
-
-	Wallet *models.Wallet
 }
 
 type RegisterUserResponse struct {
@@ -35,7 +33,10 @@ func (r *Registrator) RegisterNewUser() func(http.ResponseWriter, *http.Request)
 		}
 		r.logg.Debug().Msgf("successfully parse request: %v", requestJSON)
 		user := requestJSON.User
-		wallet := requestJSON.Wallet
+		wallet := &models.Wallet{
+			Currency: models.RUB,
+			Value: 1000,
+		}
 		id, err := r.storage.SaveNewUser(context.TODO(), user, wallet)
 		if err != nil {
 			if errors.Is(err, errs.ErrUserAlreadyExists) {
