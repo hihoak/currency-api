@@ -25,12 +25,12 @@ Content-Type: application/json
   }
 }
 
-### /register/approve
+### /login
 POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/login
 Content-Type: application/json
 
 {
-  "username": "artemikhaylov",
+  "phone_number": "+1112312",
   "password": "secretpass"
 }
 

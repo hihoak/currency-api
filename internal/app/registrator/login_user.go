@@ -10,9 +10,9 @@ import (
 )
 
 type LoginUserRequest struct {
-	PhoneNumber string
-	Email string
-	Password string
+	PhoneNumber string `json:"phone_number"`
+	Email string `json:"email"`
+	Password string `json:"password"`
 }
 
 func (r *Registrator) LoginUser() func(http.ResponseWriter, *http.Request) {
