@@ -25,8 +25,8 @@ func (c Currencies) String() string {
 }
 
 type Wallet struct {
-	ID int64
-	UserID int64
-	Currency Currencies
-	Value int64
+	ID int64 `json:"id" db:"id"`
+	UserID int64 `json:"user_id" db:"user_id"`
+	Currency Currencies `json:"currency" db:"currency"`
+	Value int64 `json:"value" db:"value"`
 }
