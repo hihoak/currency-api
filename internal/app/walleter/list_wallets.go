@@ -72,6 +72,7 @@ func (w *Walleter) ListUsersWallets() func(http.ResponseWriter, *http.Request) {
 			res = append(res, &UsersWalletsResponse{
 				Currency: currency,
 				Inactive: true,
+				CourseInfo: w.exchange.GetCourse(currency, models.RUB),
 			})
 		}
 
