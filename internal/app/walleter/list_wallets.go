@@ -16,11 +16,11 @@ type ListUsersWalletsRequest struct {
 }
 
 type UsersWalletsResponse struct {
-	ID int64
-	UserID int64
-	Currency models.Currencies
-	Value int64
-	CourseInfo exchanger.CourseInfo
+	ID int64 `json:"id"`
+	UserID int64 `json:"user_id"`
+	Currency models.Currencies `json:"currency"`
+	Value int64 `json:"value"`
+	CourseInfo exchanger.CourseInfo `json:"course_info"`
 }
 
 func (w *Walleter) ListUsersWallets() func(http.ResponseWriter, *http.Request) {

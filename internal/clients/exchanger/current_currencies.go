@@ -8,8 +8,8 @@ import (
 var allSupportedCurrencies = []models.Currencies{models.RUB, models.EUR, models.USD}
 
 type CourseInfo struct {
-	Value float64
-	IsIncreasing bool
+	Value float64 `json:"value"`
+	IsIncreasing bool `json:"is_increasing"`
 }
 
 type CurrenciesQuotes struct {
