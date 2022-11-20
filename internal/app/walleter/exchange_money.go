@@ -17,7 +17,6 @@ type ExchangeMoneyRequest struct {
 	ToWalletID int64 `json:"to_wallet_id"`
 	FromCurrency models.Currencies `json:"from_currency"`
 	ToCurrency models.Currencies `json:"to_currency"`
-	Course float64 `json:"course"`
 	Amount int64 `json:"amount"`
 }
 
@@ -50,12 +49,6 @@ func (w *Walleter) ExchangeMoney() func(http.ResponseWriter, *http.Request) {
 		}
 
 		realCourse := w.exchange.GetCourse(requestJSON.FromCurrency, requestJSON.ToCurrency)
-		if math.Abs(realCourse.Value - requestJSON.Course) > 0.00001 {
-			w.logg.Warn().Msgf("course was changed, current course is: %f", realCourse)
-			http.Error(writer, fmt.Sprintf("course was changed, current course is: %f", realCourse), http.StatusConflict)
-			return
-		}
-
 		toAmount := int64(math.Floor(float64(requestJSON.Amount) * realCourse.Value))
 
 		fromWallet, toWallet, err := w.storage.MoneyExchange(context.Background(),
