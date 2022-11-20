@@ -61,7 +61,7 @@ func (w *Walleter) ListUsersWallets() func(http.ResponseWriter, *http.Request) {
 			})
 		}
 
-		respJson, err := jsoniter.Marshal(wallets)
+		respJson, err := jsoniter.Marshal(res)
 		if err != nil {
 			w.logg.Error().Err(err).Msgf("failed to marshall request")
 			http.Error(writer, fmt.Sprintf("failed to marshall request: %v", err), http.StatusInternalServerError)
