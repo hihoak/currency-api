@@ -15,13 +15,20 @@ type CurrenciesQuotes struct {
 	mu *sync.RWMutex
 }
 
-func NewCurrenciesQuotes(currency models.Currencies) *CurrenciesQuotes {
+func NewCurrenciesQuotes(currency models.Currencies, onlyRub bool) *CurrenciesQuotes {
 	data := make(map[models.Currencies]CourseInfo)
-	for _, c := range models.AllSupportedCurrencies {
-		if c != currency {
-			data[c] = CourseInfo{
-				Value: 0.0,
-				IsIncreasing: false,
+	if onlyRub {
+		data[models.RUB] = CourseInfo{
+			Value: 0.0,
+			IsIncreasing: false,
+		}
+	} else {
+		for _, c := range models.AllSupportedCurrencies {
+			if c != currency {
+				data[c] = CourseInfo{
+					Value: 0.0,
+					IsIncreasing: false,
+				}
 			}
 		}
 	}

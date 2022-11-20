@@ -32,9 +32,13 @@ type Exchage struct {
 
 func New(ctx context.Context, logg *logger.Logger, quoter Quoter, storage Storager) *Exchage {
 	currentCourses := map[models.Currencies]*CurrenciesQuotes{
-		models.RUB: NewCurrenciesQuotes(models.RUB),
-		models.EUR: NewCurrenciesQuotes(models.EUR),
-		models.USD: NewCurrenciesQuotes(models.USD),
+		models.RUB: NewCurrenciesQuotes(models.RUB, false),
+		models.EUR: NewCurrenciesQuotes(models.EUR, true),
+		models.USD: NewCurrenciesQuotes(models.USD, true),
+		models.GBP: NewCurrenciesQuotes(models.GBP, true),
+		models.JPY: NewCurrenciesQuotes(models.JPY, true),
+		models.CNY: NewCurrenciesQuotes(models.CNY, true),
+		models.CHF: NewCurrenciesQuotes(models.CHF, true),
 	}
 
 	return &Exchage{
