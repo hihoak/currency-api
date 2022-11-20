@@ -22,6 +22,8 @@
 
 ## Схема БД
 
+Миграции находятся в папке `migrations` и накатываются с помощью команды `make migrate-up` и утилиты `goose`
+
 <img width="651" alt="Screenshot 2022-11-20 at 11 53 53" src="https://user-images.githubusercontent.com/92049351/202895165-a8641776-3199-43b9-b361-0cbb20d4105a.png">
 
 ## API
