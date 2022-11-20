@@ -20,6 +20,10 @@ func New(logg *logger.Logger) *Quote {
 			models.RUB: {
 				models.USD: 0.016,
 				models.EUR: 0.016,
+				models.JPY: 2.31,
+				models.CHF: 0.016,
+				models.GBP: 0.014,
+				models.CNY: 0.12,
 			},
 			models.USD: {
 				models.RUB: 60.85,
@@ -28,6 +32,18 @@ func New(logg *logger.Logger) *Quote {
 			models.EUR: {
 				models.USD: 1.03,
 				models.RUB: 62.95,
+			},
+			models.CHF: {
+				models.RUB: 63.73,
+			},
+			models.CNY: {
+				models.RUB: 8.55,
+			},
+			models.JPY: {
+				models.RUB: 0.43,
+			},
+			models.GBP: {
+				models.RUB: 72.34,
 			},
 		},
 		mu: &sync.RWMutex{},

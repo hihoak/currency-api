@@ -5,8 +5,6 @@ import (
 	"sync"
 )
 
-var allSupportedCurrencies = []models.Currencies{models.RUB, models.EUR, models.USD}
-
 type CourseInfo struct {
 	Value float64 `json:"value"`
 	IsIncreasing bool `json:"is_increasing"`
@@ -19,7 +17,7 @@ type CurrenciesQuotes struct {
 
 func NewCurrenciesQuotes(currency models.Currencies) *CurrenciesQuotes {
 	data := make(map[models.Currencies]CourseInfo)
-	for _, c := range allSupportedCurrencies {
+	for _, c := range models.AllSupportedCurrencies {
 		if c != currency {
 			data[c] = CourseInfo{
 				Value: 0.0,

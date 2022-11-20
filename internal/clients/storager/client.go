@@ -497,7 +497,7 @@ func (s *Storage) SaveCourses(ctx context.Context, timeNow time.Time, fromCurren
 	query := `
 	INSERT INTO courses (timestamp, from_currency, to_currency, course)
 	VALUES ($1, $2, $3, $4)`
-	_, err := s.db.QueryxContext(ctx, query, s.timeToSQLTimeWithTimezone(timeNow), fromCurrency, toCurrency, course)
+	_, err := s.db.QueryxContext(ctx, query, timeNow.Unix(), fromCurrency, toCurrency, course)
 	if err != nil {
 		return err
 	}

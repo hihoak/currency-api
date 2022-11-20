@@ -20,7 +20,12 @@ const (
 	RUB = "RUB"
 	USD = "USD"
 	EUR = "EUR"
+	GBP = "GBP"
+	JPY = "JPY"
+	CHF = "CHF"
+	CNY = "INR"
 )
+var AllSupportedCurrencies = []Currencies{RUB, EUR, USD, GBP, JPY, CHF, CNY}
 
 func (c Currencies) String() string {
 	return string(c)
