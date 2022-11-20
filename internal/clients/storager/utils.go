@@ -23,6 +23,23 @@ func (s *Storage) fromSQLRowsToUsers(rows *sqlx.Rows) ([]*models.User, error) {
 	return users, nil
 }
 
+func (s *Storage) fromSQLRowsToTransactions(rows *sqlx.Rows) ([]*models.Transaction, error) {
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil {
+			s.log.Error().Err(closeErr).Msg("Failed to close rows")
+		}
+	}()
+	transactions := make([]*models.Transaction, 0)
+	for rows.Next() {
+		var transaction models.Transaction
+		if scanErr := rows.StructScan(&transaction); scanErr != nil {
+			return nil, scanErr
+		}
+		transactions = append(transactions, &transaction)
+	}
+	return transactions, nil
+}
+
 func (s *Storage) fromSQLRowsToWallets(rows *sqlx.Rows) ([]*models.Wallet, error) {
 	defer func() {
 		if closeErr := rows.Close(); closeErr != nil {

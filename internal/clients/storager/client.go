@@ -186,15 +186,15 @@ func (s *Storage) GetUserByPhoneNumberOrEmail(ctx context.Context, phoneNumber, 
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
 	defer rows.Close()
-	events, scanErr := s.fromSQLRowsToUsers(rows)
+	users, scanErr := s.fromSQLRowsToUsers(rows)
 	if err != nil {
 		return nil, fmt.Errorf("failed to scan users: %w", scanErr)
 	}
-	if len(events) == 0 {
+	if len(users) == 0 {
 		return nil, fmt.Errorf("user with phoneNumber %s or email %s not found: %w", phoneNumber, mail, errs.ErrNotFound)
 	}
 	s.log.Debug().Msgf("Successfully get user")
-	return events[0], nil
+	return users[0], nil
 }
 
 func (s *Storage) GetWallet(ctx context.Context, walletID int64) (*models.Wallet, error) {
@@ -246,7 +246,24 @@ func (s *Storage) GetWalletTX(ctx context.Context, tx *sqlx.Tx, walletID int64) 
 }
 
 func (s *Storage) ListTransactions(ctx context.Context, userID int64) ([]*models.Transaction, error) {
-	return nil, nil
+	s.log.Debug().Msg("Start listing transactions")
+	query := `
+	SELECT *
+	FROM transactions
+	WHERE user_id = $1`
+	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
+	defer cancel()
+	rows, err := s.db.QueryxContext(ctx, query, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list transactions: %w", err)
+	}
+	defer rows.Close()
+	transactions, scanErr := s.fromSQLRowsToTransactions(rows)
+	if err != nil {
+		return nil, fmt.Errorf("failed to scan transactions: %w", scanErr)
+	}
+	s.log.Debug().Msgf("Successfully list transactions")
+	return transactions, nil
 }
 
 func (s *Storage) PullMoneyFromWallet(ctx context.Context, walletID int64, amount int64) (*models.Wallet, error) {

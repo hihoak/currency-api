@@ -75,6 +75,9 @@ func main() {
 	http.HandleFunc("/wallet/money/pull", wal.PullMoneyFromWallet())
 	http.HandleFunc("/wallet/exchange", wal.ExchangeMoney())
 	http.HandleFunc("/wallet/course", wal.GetCourse())
+
+	http.HandleFunc("/transaction/list", wal.ListTransactions())
+
 	http.HandleFunc("/currency/list", wal.ListCurrencies())
 
 	http.HandleFunc("/course/list", timeline.ListCourses())
