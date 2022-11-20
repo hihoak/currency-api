@@ -5,17 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hihoak/currency-api/internal/pkg/errs"
-	"github.com/hihoak/currency-api/internal/pkg/models"
 	jsoniter "github.com/json-iterator/go"
 	"net/http"
 )
 
 type ListUsersWalletsRequest struct {
 	UserID int64 `json:"user_id"`
-}
-
-type ListUsersWalletsResponse struct {
-	Wallets []*models.Wallet
 }
 
 func (w *Walleter) ListUsersWallets() func(http.ResponseWriter, *http.Request) {
@@ -44,7 +39,7 @@ func (w *Walleter) ListUsersWallets() func(http.ResponseWriter, *http.Request) {
 			return
 		}
 
-		respJson, err := jsoniter.Marshal(&ListUsersWalletsResponse{Wallets: wallets})
+		respJson, err := jsoniter.Marshal(wallets)
 		if err != nil {
 			w.logg.Error().Err(err).Msgf("failed to marshall request")
 			http.Error(writer, fmt.Sprintf("failed to marshall request: %v", err), http.StatusInternalServerError)
