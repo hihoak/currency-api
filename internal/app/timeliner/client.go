@@ -60,11 +60,11 @@ func (t *Timeline) ListCourses() func(http.ResponseWriter, *http.Request) {
 		if err != nil {
 			if errors.Is(err, errs.ErrNotFound) {
 				t.logg.Error().Err(err).Msgf("not found courses %s to %s from %s to %s", requestJSON.From, requestJSON.To, fromTime, toTime)
-				http.Error(writer, fmt.Sprintf("not found courses %s to %s from %s to %s", requestJSON.From, requestJSON.To, fromTime, toTime), http.StatusNotFound)
+				http.Error(writer, fmt.Sprintf("not found courses %s to %s from %s to %s: %w", requestJSON.From, requestJSON.To, fromTime, toTime, err), http.StatusNotFound)
 				return
 			}
 			t.logg.Error().Err(err).Msgf("failed to list courses %s to %s from %s to %s", requestJSON.From, requestJSON.To, fromTime, toTime)
-			http.Error(writer, fmt.Sprintf("failed to list courses %s to %s from %s to %s", requestJSON.From, requestJSON.To, fromTime, toTime), http.StatusInternalServerError)
+			http.Error(writer, fmt.Sprintf("failed to list courses %s to %s from %s to %s: %w", requestJSON.From, requestJSON.To, fromTime, toTime, err), http.StatusInternalServerError)
 			return
 		}
 

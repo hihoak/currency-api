@@ -1,7 +1,5 @@
 package models
 
-import "time"
-
 type User struct {
 	ID int64 `json:"id" db:"id"`
 	Name string `json:"name" db:"name"`
@@ -39,8 +37,9 @@ type Wallet struct {
 }
 
 type Course struct {
-	Timestamp time.Time `json:"timestamp"`
-	From Currencies `json:"from"`
-	To Currencies `json:"to"`
-	Value float64 `json:"value"`
+	ID int64 `json:"id"`
+	Timestamp int64 `json:"timestamp"`
+	From Currencies `json:"from" db:"from_currency"`
+	To Currencies `json:"to" db:"to_currency"`
+	Value float64 `json:"value" db:"course"`
 }
