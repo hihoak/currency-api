@@ -245,6 +245,10 @@ func (s *Storage) GetWalletTX(ctx context.Context, tx *sqlx.Tx, walletID int64) 
 	return wallets[0], nil
 }
 
+func (s *Storage) ListTransactions(ctx context.Context, userID int64) ([]*models.Transaction, error) {
+	return nil, nil
+}
+
 func (s *Storage) PullMoneyFromWallet(ctx context.Context, walletID int64, amount int64) (*models.Wallet, error) {
 	s.log.Debug().Msg("Start pulling money from wallet")
 	wallet, err := s.GetWallet(ctx, walletID)

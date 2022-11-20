@@ -87,7 +87,7 @@ POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/wallet/money/ad
 Content-Type: application/json
 
 {
-  "id": 2,
+  "id": 1,
   "value": 10000
 }
 
@@ -96,8 +96,8 @@ POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/wallet/money/pu
 Content-Type: application/json
 
 {
-  "id": 2,
-  "value": 10000
+  "id": 1,
+  "amount": 100000000
 }
 
 ### /wallet/list
@@ -118,8 +118,8 @@ Content-Type: application/json
   "to_wallet_id": 2,
   "from_currency": "RUB",
   "to_currency": "USD",
-  "course": 1,
-  "amount": 1
+  "course": 0.015945,
+  "amount": 20000
 }
 
 ### /wallet/courses

@@ -35,10 +35,6 @@ type ListCoursesRequest struct {
 	ToTime int64 `json:"to_time"`
 }
 
-type ListCoursesResponse struct {
-	Courses []*models.Course
-}
-
 func (t *Timeline) ListCourses() func(http.ResponseWriter, *http.Request) {
 	t.logg.Info().Msg("registering ListCourses handler...")
 	return func(writer http.ResponseWriter, request *http.Request) {
@@ -68,7 +64,7 @@ func (t *Timeline) ListCourses() func(http.ResponseWriter, *http.Request) {
 			return
 		}
 
-		respJson, err := jsoniter.Marshal(&ListCoursesResponse{Courses: courses})
+		respJson, err := jsoniter.Marshal(courses)
 		if err != nil {
 			t.logg.Error().Err(err).Msgf("failed to marshall request")
 			http.Error(writer, fmt.Sprintf("failed to marshall request: %v", err), http.StatusInternalServerError)
