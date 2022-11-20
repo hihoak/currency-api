@@ -152,7 +152,7 @@ Content-Type: application/json
 
 {
   "from": "RUB",
-  "to": "USD",
+  "to": "GBP",
   "from_time": 1668546834,
   "to_time": 1669151634
 }

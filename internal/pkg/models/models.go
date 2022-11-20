@@ -56,5 +56,6 @@ type Transaction struct {
 	IncomeWalletID int64 `json:"income_wallet_id" db:"income_wallet_id"`
 	OutcomeWalletID int64 `json:"outcome_wallet_id" db:"outcome_wallet_id"`
 	IncomeWalletCurrency string `json:"income_wallet_currency" db:"income_wallet_currency"`
+	OutcomeWalletCurrency string `json:"outcome_wallet_currency" db:"outcome_wallet_currency"`
 	CourseValue float64 `json:"course_value" db:"course_value"`
 }
