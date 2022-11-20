@@ -4,13 +4,23 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/hihoak/currency-api/internal/clients/exchanger"
 	"github.com/hihoak/currency-api/internal/pkg/errs"
+	"github.com/hihoak/currency-api/internal/pkg/models"
 	jsoniter "github.com/json-iterator/go"
 	"net/http"
 )
 
 type ListUsersWalletsRequest struct {
 	UserID int64 `json:"user_id"`
+}
+
+type UsersWalletsResponse struct {
+	ID int64
+	UserID int64
+	Currency models.Currencies
+	Value int64
+	CourseInfo exchanger.CourseInfo
 }
 
 func (w *Walleter) ListUsersWallets() func(http.ResponseWriter, *http.Request) {
@@ -37,6 +47,18 @@ func (w *Walleter) ListUsersWallets() func(http.ResponseWriter, *http.Request) {
 			w.logg.Error().Err(err).Msgf("failed to get wallets by user id: %d", requestJSON.UserID)
 			http.Error(writer, fmt.Sprintf("failed to get wallets by user id: %d: %v", requestJSON.UserID, err), http.StatusInternalServerError)
 			return
+		}
+
+		res := make([]*UsersWalletsResponse, len(wallets))
+		for _, wallet := range wallets {
+			courseInfo := w.exchange.GetCourse(wallet.Currency, models.RUB)
+			res = append(res, &UsersWalletsResponse{
+				ID: wallet.ID,
+				UserID: wallet.UserID,
+				Currency: wallet.Currency,
+				Value: wallet.Value,
+				CourseInfo: courseInfo,
+			})
 		}
 
 		respJson, err := jsoniter.Marshal(wallets)

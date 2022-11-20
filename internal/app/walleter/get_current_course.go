@@ -35,7 +35,7 @@ func (w *Walleter) GetCourse() func(http.ResponseWriter, *http.Request) {
 		response := &GetCourseResponse{
 			From: requestJSON.From,
 			To: requestJSON.To,
-			Course: w.exchange.GetCourse(requestJSON.From, requestJSON.To),
+			Course: w.exchange.GetCourse(requestJSON.From, requestJSON.To).Value,
 		}
 		responseJSON, err := jsoniter.Marshal(&response)
 		if err != nil {

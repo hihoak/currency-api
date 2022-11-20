@@ -2,6 +2,7 @@ package walleter
 
 import (
 	"context"
+	"github.com/hihoak/currency-api/internal/clients/exchanger"
 	"github.com/hihoak/currency-api/internal/pkg/logger"
 	"github.com/hihoak/currency-api/internal/pkg/models"
 )
@@ -15,7 +16,7 @@ type Storager interface {
 }
 
 type Exchanger interface {
-	GetCourse(from, to models.Currencies) float64
+	GetCourse(from, to models.Currencies) exchanger.CourseInfo
 }
 
 type Walleter struct {

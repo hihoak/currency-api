@@ -7,16 +7,24 @@ import (
 
 var allSupportedCurrencies = []models.Currencies{models.RUB, models.EUR, models.USD}
 
+type CourseInfo struct {
+	Value float64
+	IsIncreasing bool
+}
+
 type CurrenciesQuotes struct {
-	Data map[models.Currencies]float64
+	Data map[models.Currencies]CourseInfo
 	mu *sync.RWMutex
 }
 
 func NewCurrenciesQuotes(currency models.Currencies) *CurrenciesQuotes {
-	data := make(map[models.Currencies]float64)
+	data := make(map[models.Currencies]CourseInfo)
 	for _, c := range allSupportedCurrencies {
 		if c != currency {
-			data[c] = 0.0
+			data[c] = CourseInfo{
+				Value: 0.0,
+				IsIncreasing: false,
+			}
 		}
 	}
 
@@ -28,11 +36,15 @@ func NewCurrenciesQuotes(currency models.Currencies) *CurrenciesQuotes {
 
 func (c *CurrenciesQuotes) Update(to models.Currencies, quote float64) {
 	c.mu.Lock()
-	c.Data[to] = quote
+	oldValue := c.Data[to].Value
+	c.Data[to] = CourseInfo{
+		Value: quote,
+		IsIncreasing: quote > oldValue,
+	}
 	c.mu.Unlock()
 }
 
-func (c *CurrenciesQuotes) Get(to models.Currencies) float64 {
+func (c *CurrenciesQuotes) Get(to models.Currencies) CourseInfo {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 	return c.Data[to]

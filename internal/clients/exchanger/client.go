@@ -83,6 +83,6 @@ func (e *Exchage) Start() {
 	}()
 }
 
-func (e *Exchage) GetCourse(from, to models.Currencies) float64 {
+func (e *Exchage) GetCourse(from, to models.Currencies) CourseInfo {
 	return e.currentCourses[from].Get(to)
 }
