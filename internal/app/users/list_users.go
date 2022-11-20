@@ -3,7 +3,6 @@ package users
 import (
 	"context"
 	"fmt"
-	"github.com/hihoak/currency-api/internal/pkg/models"
 	jsoniter "github.com/json-iterator/go"
 	"net/http"
 )
@@ -11,10 +10,6 @@ import (
 type ListUserRequest struct {
 	Offset int64
 	Count int64
-}
-
-type ListUserResponse struct {
-	Users []*models.User
 }
 
 func (u *Users) ListUsers() func(http.ResponseWriter, *http.Request) {
@@ -38,7 +33,7 @@ func (u *Users) ListUsers() func(http.ResponseWriter, *http.Request) {
 			return
 		}
 
-		respJson, err := jsoniter.Marshal(&ListUserResponse{Users: users})
+		respJson, err := jsoniter.Marshal(users)
 		if err != nil {
 			u.logg.Error().Err(err).Msgf("failed to marshall user")
 			http.Error(writer, fmt.Sprintf("failed to marshall user: %v", err), http.StatusInternalServerError)
