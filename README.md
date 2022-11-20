@@ -11,6 +11,10 @@
 4) `Storager` - интерфейс для базы данных, в нашем случае Postgres. Развернуто в docker с помощью
    docker compose
 
+## Схема БД
+
+<img width="651" alt="Screenshot 2022-11-20 at 11 53 53" src="https://user-images.githubusercontent.com/92049351/202895165-a8641776-3199-43b9-b361-0cbb20d4105a.png">
+
 ## API
 
 ### POST /register
