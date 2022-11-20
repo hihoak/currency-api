@@ -47,14 +47,14 @@ type Course struct {
 }
 
 type Transaction struct {
-	ID int64 `json:"id"`
-	UserID int64 `json:"user_id"`
-	Date time.Time `json:"date"`
-	OperationName string `json:"operation_name"`
-	IncomeAmount int64 `json:"income_amount"`
-	OutcomeAmount int64 `json:"outcome_amount"`
-	IncomeWalletID int64 `json:"income_wallet_id"`
-	OutcomeWalletID int64 `json:"outcome_wallet_id"`
-	IncomeWalletCurrency string `json:"income_wallet_currency"`
-	CourseValue float64 `json:"course_value"`
+	ID int64 `json:"id" db:"id"`
+	UserID int64 `json:"user_id" db:"user_id"`
+	Date time.Time `json:"date" db:"date"`
+	OperationName string `json:"operation_name" db:"operation_name"`
+	IncomeAmount int64 `json:"income_amount" db:"income_amount"`
+	OutcomeAmount int64 `json:"outcome_amount" db:"outcome_amount"`
+	IncomeWalletID int64 `json:"income_wallet_id" db:"income_wallet_id"`
+	OutcomeWalletID int64 `json:"outcome_wallet_id" db:"outcome_wallet_id"`
+	IncomeWalletCurrency string `json:"income_wallet_currency" db:"income_wallet_currency"`
+	CourseValue float64 `json:"course_value" db:"course_value"`
 }
