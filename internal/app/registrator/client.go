@@ -10,6 +10,7 @@ type Storager interface {
 	SaveNewUser(ctx context.Context, user *models.User, wallet *models.Wallet) (int64, error)
 	GetUserByPhoneNumberOrEmail(ctx context.Context, phoneNumber, email string) (*models.User, error)
 	ApproveUsersRequest(ctx context.Context, userID int64) error
+	GetUserWallets(ctx context.Context, userID int64) ([]*models.Wallet, error)
 }
 
 type Registrator struct {

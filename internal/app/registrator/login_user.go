@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/hihoak/currency-api/internal/pkg/errs"
+	"github.com/hihoak/currency-api/internal/pkg/models"
 	jsoniter "github.com/json-iterator/go"
 	"net/http"
 )
@@ -13,6 +14,20 @@ type LoginUserRequest struct {
 	PhoneNumber string `json:"phone_number"`
 	Email string `json:"email"`
 	Password string `json:"password"`
+}
+
+type LoginUserResponse struct {
+	ID          int64  `json:"id" db:"id"`
+	Name        string `json:"name" db:"name"`
+	MiddleName  string `json:"middle_name" db:"middle_name"`
+	Surname     string `json:"surname" db:"surname"`
+	Mail        string `json:"mail" db:"mail"`
+	PhoneNumber string `json:"phone_number" db:"phone_number"`
+	Blocked     bool   `json:"blocked" db:"blocked"`
+	Registered  bool   `json:"registered" db:"registered"`
+	Admin       bool   `json:"admin" db:"admin"`
+	Password    string `json:"password" db:"password"`
+	MainWalletID int64 `json:"main_wallet_id"`
 }
 
 func (r *Registrator) LoginUser() func(http.ResponseWriter, *http.Request) {
@@ -47,7 +62,33 @@ func (r *Registrator) LoginUser() func(http.ResponseWriter, *http.Request) {
 			return
 		}
 
-		responseJSON, err := jsoniter.Marshal(user)
+		wallets, err := r.storage.GetUserWallets(context.Background(), user.ID)
+		if err != nil {
+			r.logg.Error().Err(err).Msgf("failed to get wallets user")
+			http.Error(writer, fmt.Sprintf("failed to get wallets user: %v", err), http.StatusInternalServerError)
+			return
+		}
+
+		resp := &LoginUserResponse{
+			ID: user.ID,
+			Name: user.Name,
+			Surname: user.Surname,
+			MiddleName: user.MiddleName,
+			Mail: user.Mail,
+			PhoneNumber: user.PhoneNumber,
+			Blocked: user.Blocked,
+			Registered: user.Registered,
+			Admin: user.Admin,
+			Password: user.Password,
+		}
+		for _, wallet := range wallets {
+			if wallet.Currency == models.RUB {
+				resp.MainWalletID = wallet.ID
+				break
+			}
+		}
+
+		responseJSON, err := jsoniter.Marshal(resp)
 		if err != nil {
 			r.logg.Error().Err(err).Msgf("failed to parse user")
 			http.Error(writer, fmt.Sprintf("failed to parse user: %v", err), http.StatusInternalServerError)
