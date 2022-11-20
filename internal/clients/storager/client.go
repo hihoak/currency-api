@@ -516,11 +516,11 @@ func (s *Storage) ListCourses(ctx context.Context, fromCurrency, toCurrency mode
 
 	rows, err := s.db.QueryxContext(ctx, q)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to do request: %w", err)
 	}
 	courses, err := s.fromSQLRowsToCourses(rows)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse rows: %w", err)
 	}
 
 	s.log.Debug().Msgf("finish ListCourses")
