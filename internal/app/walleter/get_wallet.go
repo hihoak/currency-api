@@ -4,13 +4,23 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/hihoak/currency-api/internal/clients/exchanger"
 	"github.com/hihoak/currency-api/internal/pkg/errs"
+	"github.com/hihoak/currency-api/internal/pkg/models"
 	jsoniter "github.com/json-iterator/go"
 	"net/http"
 )
 
 type GetWalletRequest struct {
 	ID int64
+}
+
+type GetWalletResponse struct {
+	ID int64 `json:"id"`
+	UserID int64 `json:"user_id"`
+	Currency models.Currencies `json:"currency"`
+	Value int64 `json:"value"`
+	CourseInfo exchanger.CourseInfo `json:"course_info"`
 }
 
 func (w *Walleter) GetWallet() func(http.ResponseWriter, *http.Request) {
@@ -38,8 +48,16 @@ func (w *Walleter) GetWallet() func(http.ResponseWriter, *http.Request) {
 			http.Error(writer, fmt.Sprintf("failed to get wallet: %v", err), http.StatusInternalServerError)
 			return
 		}
+		courseInfo := w.exchange.GetCourse(wallet.Currency, models.RUB)
 
-		responseJSON, err := jsoniter.Marshal(wallet)
+		resp := &GetWalletResponse{
+			ID: wallet.ID,
+			UserID: wallet.UserID,
+			Currency: wallet.Currency,
+			Value: wallet.Value,
+			CourseInfo: courseInfo,
+		}
+		responseJSON, err := jsoniter.Marshal(resp)
 		if err != nil {
 			w.logg.Error().Err(err).Msgf("failed to parse wallet")
 			http.Error(writer, fmt.Sprintf("failed to parse wallet: %v", err), http.StatusInternalServerError)
