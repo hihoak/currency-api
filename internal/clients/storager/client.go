@@ -250,7 +250,8 @@ func (s *Storage) ListTransactions(ctx context.Context, userID int64) ([]*models
 	query := `
 	SELECT *
 	FROM transactions
-	WHERE user_id = $1`
+	WHERE user_id = $1
+	ORDER BY date;`
 	ctx, cancel := context.WithTimeout(ctx, s.connectionTimeout)
 	defer cancel()
 	rows, err := s.db.QueryxContext(ctx, query, userID)
@@ -620,6 +621,7 @@ func (s *Storage) ListCourses(ctx context.Context, fromCurrency, toCurrency mode
 	SELECT *
 	FROM courses 
 	WHERE timestamp >= $1 AND timestamp <= $2 AND from_currency = $3 AND to_currency = $4
+	ORDER BY timestamp;
 	`
 	s.log.Debug().Msgf("ListCourses: run query: %s", q)
 
