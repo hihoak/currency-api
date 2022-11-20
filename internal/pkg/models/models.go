@@ -48,6 +48,7 @@ type Course struct {
 
 type Transaction struct {
 	ID int64 `json:"id"`
+	UserID int64 `json:"user_id"`
 	Date time.Time `json:"date"`
 	OperationName string `json:"operation_name"`
 	IncomeAmount int64 `json:"income_amount"`
