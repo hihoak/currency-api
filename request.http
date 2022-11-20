@@ -122,6 +122,12 @@ Content-Type: application/json
   "to": "EUR"
 }
 
+### /currency/list
+POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/currency/list
+Content-Type: application/json
+
+{}
+
 
 ### /course/list
 POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/course/list

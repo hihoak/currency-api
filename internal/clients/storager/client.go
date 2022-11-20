@@ -130,10 +130,11 @@ func (s *Storage) ApproveUsersRequest(ctx context.Context, userID int64) error {
 	UPDATE users
 	SET registered = true
 	WHERE id = $1;`
-	_, err := s.db.QueryxContext(ctx, q, userID)
+	rows, err := s.db.QueryxContext(ctx, q, userID)
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 	return nil
 }
 
@@ -142,10 +143,11 @@ func (s *Storage) BlockOrUnblockUser(ctx context.Context, userID int64, block bo
 	UPDATE users
 	SET blocked = $2
 	WHERE id = $1;`
-	_, err := s.db.QueryxContext(ctx, q, userID, block)
+	rows, err := s.db.QueryxContext(ctx, q, userID, block)
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 	return nil
 }
 
@@ -286,8 +288,12 @@ func (s *Storage) AddTransactionTX(ctx context.Context, tx *sqlx.Tx, walletID in
 	INSERT INTO transactions (wallet_id, user_id, date, operation_name)
 	VALUES ($1, $2, now(), $3)
 	RETURNING id`
-	_, err := tx.QueryxContext(ctx, query, walletID, userID, operationName)
-	return err
+	rows, err := tx.QueryxContext(ctx, query, walletID, userID, operationName)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	return nil
 }
 
 func (s *Storage) SetMoneyToWalletTX(ctx context.Context, tx *sqlx.Tx, walletID int64, value int64) (int64, error) {
@@ -301,6 +307,7 @@ func (s *Storage) SetMoneyToWalletTX(ctx context.Context, tx *sqlx.Tx, walletID 
 	if err != nil {
 		return 0, err
 	}
+	defer res.Close()
 	var id int64
 	for res.Next() {
 		if err = res.Scan(&id); err != nil {
@@ -505,10 +512,11 @@ func (s *Storage) SaveCourses(ctx context.Context, timeNow time.Time, fromCurren
 	query := `
 	INSERT INTO courses (timestamp, from_currency, to_currency, course)
 	VALUES ($1, $2, $3, $4)`
-	_, err := s.db.QueryxContext(ctx, query, timeNow.Unix(), fromCurrency, toCurrency, course)
+	rows, err := s.db.QueryxContext(ctx, query, timeNow.Unix(), fromCurrency, toCurrency, course)
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 	s.log.Debug().Msgf("successfully saved course")
 	return nil
 }
