@@ -165,9 +165,9 @@ func (s *Storage) ListUsers(ctx context.Context, count, offset int64) ([]*models
 		return nil, fmt.Errorf("failed to list users: %w", err)
 	}
 	defer rows.Close()
-	events, scanErr := s.fromSQLRowsToUsers(rows)
+	events, err := s.fromSQLRowsToUsers(rows)
 	if err != nil {
-		return nil, fmt.Errorf("failed to scan users: %w", scanErr)
+		return nil, fmt.Errorf("failed to scan users: %w", err)
 	}
 	s.log.Debug().Msgf("Successfully list events")
 	return events, nil
@@ -186,9 +186,9 @@ func (s *Storage) GetUserByPhoneNumberOrEmail(ctx context.Context, phoneNumber, 
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
 	defer rows.Close()
-	users, scanErr := s.fromSQLRowsToUsers(rows)
+	users, err := s.fromSQLRowsToUsers(rows)
 	if err != nil {
-		return nil, fmt.Errorf("failed to scan users: %w", scanErr)
+		return nil, fmt.Errorf("failed to scan users: %w", err)
 	}
 	if len(users) == 0 {
 		return nil, fmt.Errorf("user with phoneNumber %s or email %s not found: %w", phoneNumber, mail, errs.ErrNotFound)
@@ -258,9 +258,9 @@ func (s *Storage) ListTransactions(ctx context.Context, userID int64) ([]*models
 		return nil, fmt.Errorf("failed to list transactions: %w", err)
 	}
 	defer rows.Close()
-	transactions, scanErr := s.fromSQLRowsToTransactions(rows)
+	transactions, err := s.fromSQLRowsToTransactions(rows)
 	if err != nil {
-		return nil, fmt.Errorf("failed to scan transactions: %w", scanErr)
+		return nil, fmt.Errorf("failed to scan transactions: %w", err)
 	}
 	s.log.Debug().Msgf("Successfully list transactions")
 	return transactions, nil
@@ -411,9 +411,9 @@ func (s *Storage) GetUser(ctx context.Context, userID int64) (*models.User, erro
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
 	defer rows.Close()
-	events, scanErr := s.fromSQLRowsToUsers(rows)
+	events, err := s.fromSQLRowsToUsers(rows)
 	if err != nil {
-		return nil, fmt.Errorf("failed to scan users: %w", scanErr)
+		return nil, fmt.Errorf("failed to scan users: %w", err)
 	}
 	if len(events) == 0 {
 		return nil, fmt.Errorf("user with id %d not found: %w", userID, errs.ErrNotFound)
@@ -435,9 +435,9 @@ func (s *Storage) GetUserWallets(ctx context.Context, userID int64) ([]*models.W
 		return nil, fmt.Errorf("failed to get wallets: %w", err)
 	}
 	defer rows.Close()
-	wallets, scanErr := s.fromSQLRowsToWallets(rows)
+	wallets, err := s.fromSQLRowsToWallets(rows)
 	if err != nil {
-		return nil, fmt.Errorf("failed to scan wallets: %w", scanErr)
+		return nil, fmt.Errorf("failed to scan wallets: %w", err)
 	}
 	if len(wallets) == 0 {
 		return nil, fmt.Errorf("wallets with user_id %d not found: %w", userID, errs.ErrNotFound)
@@ -459,9 +459,9 @@ func (s *Storage) GetUserWalletsTX(ctx context.Context, tx *sqlx.Tx, userID int6
 		return nil, fmt.Errorf("failed to get wallets: %w", err)
 	}
 	defer rows.Close()
-	wallets, scanErr := s.fromSQLRowsToWallets(rows)
+	wallets, err := s.fromSQLRowsToWallets(rows)
 	if err != nil {
-		return nil, fmt.Errorf("failed to scan wallets: %w", scanErr)
+		return nil, fmt.Errorf("failed to scan wallets: %w", err)
 	}
 	if len(wallets) == 0 {
 		return nil, fmt.Errorf("wallets with user_id %d not found: %w", userID, errs.ErrNotFound)

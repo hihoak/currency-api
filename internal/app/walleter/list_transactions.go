@@ -12,9 +12,9 @@ type ListTransactionsRequest struct {
 }
 
 func (w *Walleter) ListTransactions() func(http.ResponseWriter, *http.Request) {
-	w.logg.Info().Msg("registering GetWallet handler...")
+	w.logg.Info().Msg("registering ListTransactions handler...")
 	return func(writer http.ResponseWriter, request *http.Request) {
-		w.logg.Info().Msg("start GetWallet handler...")
+		w.logg.Info().Msg("start ListTransactions handler...")
 		dec := jsoniter.NewDecoder(request.Body)
 		dec.DisallowUnknownFields()
 
@@ -32,6 +32,8 @@ func (w *Walleter) ListTransactions() func(http.ResponseWriter, *http.Request) {
 			return
 		}
 
+		w.logg.Debug().Msgf("got %d transactions", len(transactions))
+
 		responseJSON, err := jsoniter.Marshal(transactions)
 		if err != nil {
 			w.logg.Error().Err(err).Msgf("failed to parse wallet")
@@ -46,6 +48,6 @@ func (w *Walleter) ListTransactions() func(http.ResponseWriter, *http.Request) {
 		}
 
 		writer.WriteHeader(http.StatusOK)
-		w.logg.Info().Msg("end GetWallet handler")
+		w.logg.Info().Msg("end ListTransactions handler")
 	}
 }

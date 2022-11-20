@@ -131,6 +131,14 @@ Content-Type: application/json
   "to": "EUR"
 }
 
+### /transaction/list
+POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/transaction/list
+Content-Type: application/json
+
+{
+  "user_id": 1
+}
+
 ### /currency/list
 POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/currency/list
 Content-Type: application/json
