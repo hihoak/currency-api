@@ -15,6 +15,35 @@
 4) `Storager` - интерфейс для базы данных, в нашем случае Postgres. Развернуто в docker с помощью
    docker compose
 
+## Конфигурация
+Для конфигурации можно использовать переменные среды или конфиг файл переданный через флаг `--config`:
+```yaml
+   # service
+   CURRENCY_API_SERVER_ADDRESS: "0.0.0.0:8000" # адрес по которому будет слушать сервис
+   # database
+   CURRENCY_API_DATABASE_HOST: "127.0.0.1" # хост от ДБ
+   CURRENCY_API_DATABASE_PORT: "5432" # порт от ДБ
+   CURRENCY_API_DATABASE_USER: "postgres"
+   CURRENCY_API_DATABASE_PASSWORD: "password" # пароль от ДБ
+   CURRENCY_API_DATABASE_CONNECTION_TIMEOUT: 2s # таймаут на коннекты к базе
+
+   # logger
+   CURRENCY_API_LOGGER_LOG_LEVEL: "debug"
+```
+
+```yaml
+   server:
+      address: "0.0.0.0:8000"
+   database:
+      host: "127.0.0.1"
+      port: "5432"
+      user: "postgres"
+      password: "pass"
+      connection_timeout: 2s
+   logger:
+      log_level: "debug"
+```
+
 ## Архитектура
 
 Архитектура состоит из 2 компонентов - БД Postgresql и Сервис на Golang. 
