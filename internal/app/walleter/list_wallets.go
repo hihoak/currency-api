@@ -21,6 +21,7 @@ type UsersWalletsResponse struct {
 	Currency models.Currencies `json:"currency"`
 	Value int64 `json:"value"`
 	CourseInfo exchanger.CourseInfo `json:"course_info"`
+	Inactive bool `json:"inactive"`
 }
 
 func (w *Walleter) ListUsersWallets() func(http.ResponseWriter, *http.Request) {
@@ -61,6 +62,20 @@ func (w *Walleter) ListUsersWallets() func(http.ResponseWriter, *http.Request) {
 			}
 		}
 
+	main:
+		for _, currency := range models.AllSupportedCurrencies {
+			for _, r := range res {
+				if r.Currency == currency {
+					continue main
+				}
+			}
+			res = append(res, &UsersWalletsResponse{
+				Currency: currency,
+				Inactive: true,
+			})
+		}
+
+
 		respJson, err := jsoniter.Marshal(res)
 		if err != nil {
 			w.logg.Error().Err(err).Msgf("failed to marshall request")
@@ -77,3 +92,11 @@ func (w *Walleter) ListUsersWallets() func(http.ResponseWriter, *http.Request) {
 	}
 }
 
+func currencyInUserWallets(wallets []*models.Wallet, currency models.Currencies) bool {
+	for _, wallet := range wallets {
+		if wallet.Currency == currency {
+			return true
+		}
+	}
+	return false
+}
