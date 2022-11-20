@@ -59,7 +59,7 @@ func (w *Walleter) ExchangeMoney() func(http.ResponseWriter, *http.Request) {
 		toAmount := int64(math.Floor(float64(requestJSON.Amount) * realCourse.Value))
 
 		fromWallet, toWallet, err := w.storage.MoneyExchange(context.Background(),
-			requestJSON.UserID, requestJSON.FromWalletID, requestJSON.ToWalletID, requestJSON.Amount, toAmount)
+			requestJSON.UserID, requestJSON.FromWalletID, requestJSON.ToWalletID, requestJSON.Amount, toAmount, requestJSON.FromCurrency, requestJSON.ToCurrency, realCourse.Value)
 		if err != nil {
 			if errors.Is(err, errs.ErrNotFound) {
 				w.logg.Error().Err(err).Msgf("not found wallets by user_id: %d", requestJSON.UserID)

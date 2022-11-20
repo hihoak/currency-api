@@ -245,6 +245,52 @@ func (s *Storage) GetWalletTX(ctx context.Context, tx *sqlx.Tx, walletID int64) 
 	return wallets[0], nil
 }
 
+func (s *Storage) PullMoneyFromWallet(ctx context.Context, walletID int64, amount int64) (*models.Wallet, error) {
+	s.log.Debug().Msg("Start pulling money from wallet")
+	wallet, err := s.GetWallet(ctx, walletID)
+	if err != nil {
+		return nil, err
+	}
+
+	if wallet.Value < amount {
+		return nil, fmt.Errorf("can't pull money from walliet id %d: %w", walletID, errs.ErrNotEnoughMoney)
+	}
+
+	tx, err := s.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if err != nil {
+			if err := tx.Rollback(); err != nil {
+				s.log.Error().Err(err).Msg("failed to rollback")
+			}
+		}
+	}()
+	newValue := wallet.Value - amount
+	_, err = s.SetMoneyToWalletTX(ctx, tx, walletID, newValue)
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.AddTransactionTX(
+		ctx, tx, wallet.UserID,
+		"PULL MONEY", 0,
+		wallet.ID, 0, amount,
+		"", wallet.Currency, 1)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	s.log.Debug().Msgf("Successfully pull money from wallet")
+	wallet.Value = newValue
+	return wallet, nil
+}
+
 func (s *Storage) AddMoneyToWallet(ctx context.Context, walletID int64, amount int64) (*models.Wallet, error) {
 	s.log.Debug().Msg("Start adding money to wallet")
 	wallet, err := s.GetWallet(ctx, walletID)
@@ -269,7 +315,11 @@ func (s *Storage) AddMoneyToWallet(ctx context.Context, walletID int64, amount i
 		return nil, err
 	}
 
-	err = s.AddTransactionTX(ctx, tx, walletID, wallet.UserID, "ADD MONEY")
+	err = s.AddTransactionTX(
+		ctx, tx, wallet.UserID,
+		"ADD MONEY", wallet.ID,
+		0, amount, 0,
+		wallet.Currency, "", 1)
 	if err != nil {
 		return nil, err
 	}
@@ -283,12 +333,21 @@ func (s *Storage) AddMoneyToWallet(ctx context.Context, walletID int64, amount i
 	return wallet, nil
 }
 
-func (s *Storage) AddTransactionTX(ctx context.Context, tx *sqlx.Tx, walletID int64, userID int64, operationName string) error {
+func (s *Storage) AddTransactionTX(
+	ctx context.Context,
+	tx *sqlx.Tx,
+	userID int64,
+	operationName string,
+	incomeWalletID, outcomeWalletID, incomeAmount, outcomeAmount int64,
+	incomeWalletCurrency models.Currencies,
+	outcomeWalletCurrency models.Currencies,
+	courseValue float64,
+) error {
 	query := `
-	INSERT INTO transactions (wallet_id, user_id, date, operation_name)
-	VALUES ($1, $2, now(), $3)
+	INSERT INTO transactions (date, user_id, operation_name, income_amount, outcome_amount, income_wallet_id, outcome_wallet_id, income_wallet_currency, outcome_wallet_currency, course_value)
+	VALUES (now(), $1, $2, $3, $4, $5, $6, $7, $8, $9)
 	RETURNING id`
-	rows, err := tx.QueryxContext(ctx, query, walletID, userID, operationName)
+	rows, err := tx.QueryxContext(ctx, query, userID, operationName, incomeAmount, outcomeAmount, incomeWalletID, outcomeWalletID, incomeWalletCurrency, outcomeWalletCurrency, courseValue)
 	if err != nil {
 		return err
 	}
@@ -436,6 +495,9 @@ func (s *Storage) MoneyExchange(
 	toWalletID int64,
 	fromAmount int64,
 	toAmount int64,
+	fromCurrency models.Currencies,
+	toCurrency models.Currencies,
+	courseValue float64,
 ) (*models.Wallet, *models.Wallet, error) {
 	s.log.Info().Msgf("start MoneyExhange from %d to %d", fromWalletID, toWalletID)
 	tx, err := s.db.BeginTxx(ctx, nil)
@@ -491,7 +553,17 @@ func (s *Storage) MoneyExchange(
 		return nil, nil, err
 	}
 
-	err = s.AddTransactionTX(ctx, tx, fromWalletID, userID, "EXCHANGE MONEY")
+	err = s.AddTransactionTX(ctx, tx,
+		userID,
+		"EXCHANGE MONEY",
+		toWalletID,
+		fromWalletID,
+		toAmount,
+		fromAmount,
+		toCurrency,
+		fromCurrency,
+		courseValue,
+		)
 	if err != nil {
 		return nil, nil, err
 	}

@@ -9,10 +9,11 @@ import (
 
 type Storager interface {
 	AddMoneyToWallet(ctx context.Context, walletID int64, amount int64) (*models.Wallet, error)
+	PullMoneyFromWallet(ctx context.Context, walletID int64, amount int64) (*models.Wallet, error)
 	GetWallet(ctx context.Context, walletID int64) (*models.Wallet, error)
 	SaveWalletUnary(ctx context.Context, wallet *models.Wallet) (int64, error)
 	GetUserWallets(ctx context.Context, userID int64) ([]*models.Wallet, error)
-	MoneyExchange(ctx context.Context, userID, fromWalletID, toWalletID int64, amount int64, toAmount int64) (*models.Wallet, *models.Wallet, error)
+	MoneyExchange(ctx context.Context, userID, fromWalletID, toWalletID int64, amount int64, toAmount int64, 	fromCurrency models.Currencies, toCurrency models.Currencies, courseValue float64) (*models.Wallet, *models.Wallet, error)
 }
 
 type Exchanger interface {

@@ -91,6 +91,15 @@ Content-Type: application/json
   "value": 10000
 }
 
+### "/wallet/money/pull"
+POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/wallet/money/pull
+Content-Type: application/json
+
+{
+  "id": 2,
+  "value": 10000
+}
+
 ### /wallet/list
 POST http://ec2-35-88-92-18.us-west-2.compute.amazonaws.com:8000/wallet/list
 Content-Type: application/json
