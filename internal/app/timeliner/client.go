@@ -13,7 +13,7 @@ import (
 )
 
 type Storager interface {
-	ListCourses(ctx context.Context, fromCurrency, toCurrency models.Currencies, forTime time.Duration) ([]*models.Course, error)
+	ListCourses(ctx context.Context, fromCurrency, toCurrency models.Currencies, fromTime int64, toTime int64) ([]*models.Course, error)
 }
 
 type Timeline struct {
@@ -31,7 +31,8 @@ func New(logg *logger.Logger, storage Storager) *Timeline {
 type ListCoursesRequest struct {
 	From models.Currencies `json:"from"`
 	To models.Currencies `json:"to"`
-	forTime time.Duration `json:"for_time"`
+	FromTime int64 `json:"from_time"`
+	ToTime int64 `json:"to_time"`
 }
 
 type ListCoursesResponse struct {
@@ -52,15 +53,18 @@ func (t *Timeline) ListCourses() func(http.ResponseWriter, *http.Request) {
 			return
 		}
 
-		courses, err := t.storage.ListCourses(context.Background(), requestJSON.From, requestJSON.To, requestJSON.forTime)
+		fromTime := time.Unix(requestJSON.FromTime, 0)
+		toTime := time.Unix(requestJSON.ToTime, 0)
+
+		courses, err := t.storage.ListCourses(context.Background(), requestJSON.From, requestJSON.To, requestJSON.FromTime, requestJSON.ToTime)
 		if err != nil {
 			if errors.Is(err, errs.ErrNotFound) {
-				t.logg.Error().Err(err).Msgf("not found courses %s to %s for %s", requestJSON.From, requestJSON.To, requestJSON.forTime)
-				http.Error(writer, fmt.Sprintf("not found courses %s to %s from %s to %s", requestJSON.From, requestJSON.To, requestJSON.forTime), http.StatusNotFound)
+				t.logg.Error().Err(err).Msgf("not found courses %s to %s from %s to %s", requestJSON.From, requestJSON.To, fromTime, toTime)
+				http.Error(writer, fmt.Sprintf("not found courses %s to %s from %s to %s", requestJSON.From, requestJSON.To, fromTime, toTime), http.StatusNotFound)
 				return
 			}
-			t.logg.Error().Err(err).Msgf("failed to list courses %s to %s from %s to %s", requestJSON.From, requestJSON.To, requestJSON.forTime)
-			http.Error(writer, fmt.Sprintf("failed to list courses %s to %s from %s to %s", requestJSON.From, requestJSON.To, requestJSON.forTime), http.StatusInternalServerError)
+			t.logg.Error().Err(err).Msgf("failed to list courses %s to %s from %s to %s", requestJSON.From, requestJSON.To, fromTime, toTime)
+			http.Error(writer, fmt.Sprintf("failed to list courses %s to %s from %s to %s", requestJSON.From, requestJSON.To, fromTime, toTime), http.StatusInternalServerError)
 			return
 		}
 

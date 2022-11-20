@@ -130,6 +130,5 @@ Content-Type: application/json
 {
   "from": "RUB",
   "to": "USD",
-  "from_time": 0,
-  "to_time": 1669151634
+  "for_time": "30s"
 }

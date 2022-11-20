@@ -3,7 +3,7 @@
 CREATE TABLE IF NOT EXISTS courses
 (
     id          SERIAL PRIMARY KEY NOT NULL,
-    timestamp   timestamp with time zone,
+    timestamp   bigint,
     from_currency        varchar(50),
     to_currency        varchar(50),
     course      float

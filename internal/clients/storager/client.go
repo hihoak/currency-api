@@ -505,17 +505,16 @@ func (s *Storage) SaveCourses(ctx context.Context, timeNow time.Time, fromCurren
 	return nil
 }
 
-func (s *Storage) ListCourses(ctx context.Context, fromCurrency, toCurrency models.Currencies, forLast time.Duration) ([]*models.Course, error) {
+func (s *Storage) ListCourses(ctx context.Context, fromCurrency, toCurrency models.Currencies, fromTime int64, toTime int64) ([]*models.Course, error) {
 	s.log.Debug().Msgf("Start ListCourses")
 	q := `
 	SELECT *
-	FROM courses `
-	sqlFromTimeStr := s.timeToSQLTimeWithTimezone(time.Now().Add(-forLast))
-	q += fmt.Sprintf("WHERE timestamp >= '%s' AND from_currency = '%s' AND to_currency = '%s';", sqlFromTimeStr, fromCurrency, toCurrency)
-
+	FROM courses 
+	WHERE timestamp >= $1 AND timestamp <= $2 AND from_currency = $3 AND to_currency = $4
+	`
 	s.log.Debug().Msgf("ListCourses: run query: %s", q)
 
-	rows, err := s.db.QueryxContext(ctx, q)
+	rows, err := s.db.QueryxContext(ctx, q, fromTime, toTime, fromCurrency, toCurrency)
 	if err != nil {
 		return nil, fmt.Errorf("failed to do request: %w", err)
 	}
