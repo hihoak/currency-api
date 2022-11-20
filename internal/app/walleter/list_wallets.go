@@ -50,15 +50,15 @@ func (w *Walleter) ListUsersWallets() func(http.ResponseWriter, *http.Request) {
 		}
 
 		res := make([]*UsersWalletsResponse, len(wallets))
-		for _, wallet := range wallets {
+		for idx, wallet := range wallets {
 			courseInfo := w.exchange.GetCourse(wallet.Currency, models.RUB)
-			res = append(res, &UsersWalletsResponse{
+			res[idx] = &UsersWalletsResponse{
 				ID: wallet.ID,
 				UserID: wallet.UserID,
 				Currency: wallet.Currency,
 				Value: wallet.Value,
 				CourseInfo: courseInfo,
-			})
+			}
 		}
 
 		respJson, err := jsoniter.Marshal(res)
