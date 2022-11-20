@@ -43,7 +43,7 @@ func New(ctx context.Context, logg *logger.Logger, quoter Quoter, storage Storag
 		currentCourses: currentCourses,
 		storage: storage,
 
-		ticker: time.NewTicker(time.Second * 30),
+		ticker: time.NewTicker(time.Second * 10),
 
 		doneChan: ctx.Done(),
 	}
