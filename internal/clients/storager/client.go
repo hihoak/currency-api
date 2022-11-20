@@ -534,7 +534,7 @@ func (s *Storage) MoneyExchange(
 		}
 	}()
 
-	userWallets, err := s.GetUserWalletsTX(ctx, tx, fromWalletID)
+	userWallets, err := s.GetUserWalletsTX(ctx, tx, userID)
 	if err != nil {
 		return nil, nil, err
 	}
